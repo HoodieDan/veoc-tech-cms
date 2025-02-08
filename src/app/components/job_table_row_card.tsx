@@ -2,12 +2,7 @@
 import React, { useState } from "react";
 import StatusCard from "./status_card";
 import ActionCard from "./table_action_dropdown";
-
-enum Status {
-  OPEN = "Open",
-  DRAFT = "Draft",
-  CLOSED = "Closed",
-}
+import { Status } from "../utils/customTypes";
 
 interface Params {
   checked: boolean;
@@ -16,12 +11,6 @@ interface Params {
   location: string;
   desc: string;
   status: Status;
-}
-
-enum JobAction {
-  ADD_TO_DRAFTS = "Add to Drafts",
-  OPEN_JOB = "Open Job",
-  DELETE_JOB = "Delete Job",
 }
 
 function JobTableRowCard({ title, dept, location, desc, status }: Params) {
