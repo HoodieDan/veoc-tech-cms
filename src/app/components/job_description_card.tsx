@@ -47,7 +47,7 @@ function JobDescriptionCard() {
 
         <div>
           <title>Application Tracking</title>
-          <div className="flex justify-between space-x-6">
+          <div className="flex justify-between space-y-4 xl:space-y-0 xl:space-x-6 flex-wrap xl:flex-nowrap">
             <HighlightCard subtext={"Application"} text={"500"} />
             <HighlightCard subtext={"Application"} text={"500"} />
             <HighlightCard subtext={"Application"} text={"500"} />
