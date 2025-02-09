@@ -5,45 +5,21 @@ import Search from "../components/search";
 import JobTableRowCard from "../components/job_table_row_card";
 import { RootState } from "../reduxStore/store";
 import JobDescriptionCard from "../components/job_description_card";
-import { useSelector } from "react-redux";
-import { JobAction, JobDetail, Status } from "../utils/customTypes";
-
-const mockJobs: JobDetail[] = [
-  {
-    checked: false,
-    title: "Software Engineer",
-    dept: "Engineering",
-    location: "San Francisco, CA",
-    desc: "Develop and maintain web applications.",
-    status: Status.OPEN,
-    action: JobAction.OPEN_JOB,
-  },
-  {
-    checked: true,
-    title: "Product Manager",
-    dept: "Product",
-    location: "Remote",
-    desc: "Lead product development and strategy.",
-    status: Status.DRAFT,
-    action: JobAction.ADD_TO_DRAFTS,
-  },
-  {
-    checked: false,
-    title: "UX Designer",
-    dept: "Design",
-    location: "New York, NY",
-    desc: "Design user-friendly experiences and interfaces.",
-    status: Status.CLOSED,
-    action: JobAction.DELETE_JOB,
-  },
-];
+import { useDispatch, useSelector } from "react-redux";
+import { JobAction } from "../utils/customTypes";
+import { mockJobs } from "../utils/mockData";
+import { resetDropdown } from "../reduxStore/dropdownSlice";
 
 function Page() {
   const jobAction = useSelector((state: RootState) => state.jobAction);
+  const dispatch = useDispatch();
 
   return (
     <>
-      <div className="space-y-6 pt-8">
+      <div
+        className="space-y-6 pt-8 min-h-[calc(100vh-5rem)] mb-10"
+        onClick={() => dispatch(resetDropdown())}
+      >
         <div className="flex justify-between items-center">
           <h2 className="font-medium text-lg">Jobs</h2>
           <button className="px-3 pr-5 py-2 rounded-lg flex bg-accent items-center text-background gap-x-2">
@@ -76,7 +52,7 @@ function Page() {
         </div>
 
         <div>
-          <div className="flex justify-between">
+          <div className="flex justify-between space-x-8">
             {[
               { id: 1, subtext: "Open Job Listings", text: "5000" },
               { id: 2, subtext: "Closed Job Listings", text: "2500" },
@@ -155,6 +131,7 @@ function Page() {
                 location={item.location}
                 desc={item.desc}
                 status={item.status}
+                index={index}
               />
             ))}
           </div>

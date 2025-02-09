@@ -1,8 +1,12 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import StatusCard from "./status_card";
-import ActionCard from "./table_action_dropdown";
-import { Status } from "../utils/customTypes";
+import { JobAction, Status } from "../utils/customTypes";
+import { useDispatch, useSelector } from "react-redux";
+import { updateAction } from "../reduxStore/jobActionSlice";
+import Dropdown from "./dropdown";
+import { RootState } from "../reduxStore/store";
+import { toggleDropdown } from "../reduxStore/dropdownSlice";
 
 interface Params {
   checked: boolean;
@@ -11,10 +15,36 @@ interface Params {
   location: string;
   desc: string;
   status: Status;
+  index: number;
 }
 
-function JobTableRowCard({ title, dept, location, desc, status }: Params) {
-  const [showAction, setShowAction] = useState(false);
+function JobTableRowCard({
+  title,
+  dept,
+  location,
+  desc,
+  status,
+  index,
+}: Params) {
+  const dispatch = useDispatch();
+  const dropdown = useSelector((state: RootState) => state.dropdown);
+  const handleActionUpdate = (action: JobAction) => {
+    dispatch(updateAction(action));
+  };
+  const actions = [
+    {
+      type: JobAction.ADD_TO_DRAFTS,
+      action: () => handleActionUpdate(JobAction.ADD_TO_DRAFTS),
+    },
+    {
+      type: JobAction.OPEN_JOB,
+      action: () => handleActionUpdate(JobAction.OPEN_JOB),
+    },
+    {
+      type: JobAction.DELETE_JOB,
+      action: () => handleActionUpdate(JobAction.DELETE_JOB),
+    },
+  ];
   return (
     <div>
       <ul className="flex border-b border-b-gray/30 rounded">
@@ -37,7 +67,7 @@ function JobTableRowCard({ title, dept, location, desc, status }: Params) {
           <StatusCard type={status} />
         </li>
         <li
-          onClick={() => setShowAction(!showAction)}
+          onClick={() => dispatch(toggleDropdown(index))}
           className="py-1 h-[4rem] flex relative items-center cursor-pointer text-sm px-2 w-[5%]"
         >
           <svg
@@ -67,7 +97,9 @@ function JobTableRowCard({ title, dept, location, desc, status }: Params) {
               </clipPath>
             </defs>
           </svg>
-          {showAction && <ActionCard />}
+          {dropdown.dropdowns[index] && dropdown.dropdowns[index].active && (
+            <Dropdown items={actions} index={index} />
+          )}
         </li>
       </ul>
     </div>

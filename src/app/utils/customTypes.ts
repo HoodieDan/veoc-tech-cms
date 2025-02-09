@@ -10,6 +10,12 @@ export enum Status {
   CLOSED = "Closed",
 }
 
+export enum ExperienceLevel {
+  ZERO = "0 yrs",
+  GTE_ONE = ">= 1yrs",
+  GTE_FIVE = ">= 5yrs",
+}
+
 export interface JobDetail {
   checked: boolean;
   title: string;

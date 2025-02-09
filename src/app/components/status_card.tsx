@@ -1,13 +1,8 @@
 import React from "react";
+import { Status } from "../utils/customTypes";
 
 interface Params {
   type: Status;
-}
-
-enum Status {
-  OPEN = "Open",
-  DRAFT = "Draft",
-  CLOSED = "Closed",
 }
 
 function StatusCard({ type }: Params) {
