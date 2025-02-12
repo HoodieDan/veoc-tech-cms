@@ -3,7 +3,7 @@ import React from "react";
 import StatusCard from "./status_card";
 import { JobAction, Status } from "../utils/customTypes";
 import { useDispatch, useSelector } from "react-redux";
-import { updateAction } from "../reduxStore/jobActionSlice";
+import { handleAction, updateAction } from "../reduxStore/jobActionSlice";
 import Dropdown from "./dropdown";
 import { RootState } from "../reduxStore/store";
 import { toggleDropdown } from "../reduxStore/dropdownSlice";
@@ -28,21 +28,24 @@ function JobTableRowCard({
 }: Params) {
   const dispatch = useDispatch();
   const dropdown = useSelector((state: RootState) => state.dropdown);
-  const handleActionUpdate = (action: JobAction) => {
+  const handleActionUpdate = (action: JobAction, index: number) => {
     dispatch(updateAction(action));
+    dispatch(handleAction(index));
   };
   const actions = [
     {
       type: JobAction.ADD_TO_DRAFTS,
-      action: () => handleActionUpdate(JobAction.ADD_TO_DRAFTS),
+      action: (index: number) =>
+        handleActionUpdate(JobAction.ADD_TO_DRAFTS, index),
     },
     {
       type: JobAction.OPEN_JOB,
-      action: () => handleActionUpdate(JobAction.OPEN_JOB),
+      action: (index: number) => handleActionUpdate(JobAction.OPEN_JOB, index),
     },
     {
       type: JobAction.DELETE_JOB,
-      action: () => handleActionUpdate(JobAction.DELETE_JOB),
+      action: (index: number) =>
+        handleActionUpdate(JobAction.DELETE_JOB, index),
     },
   ];
   return (

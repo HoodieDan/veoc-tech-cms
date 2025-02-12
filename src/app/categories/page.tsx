@@ -2,16 +2,21 @@
 import React, { useState } from "react";
 import JobCard from "../components/job_card";
 import CreateCategoryCard from "../components/create_category_card";
+import { RootState } from "../reduxStore/store";
+import { useDispatch, useSelector } from "react-redux";
+import { setShowCreateCategory } from "../reduxStore/categorySlice";
 
 function Page() {
-  const [showCreateCategory, setShowCreateCategory] = useState(false);
+  const dispatch = useDispatch();
+  const category = useSelector((state: RootState) => state.category);
+
   return (
     <div>
       <div className="p-1 space-y-6 pt-8 min-h-[calc(100vh-5rem)] mb-10 relative">
         <div className="flex justify-between items-center">
           <h2 className="font-medium text-lg">Manage Categories</h2>
           <button
-            onClick={() => setShowCreateCategory(true)}
+            onClick={() => dispatch(setShowCreateCategory(true))}
             className="px-3 pr-5 py-2 rounded-lg flex bg-accent items-center text-background gap-x-2"
           >
             <svg
@@ -48,17 +53,13 @@ function Page() {
           </div>
 
           <div className="grid lg:grid-cols-3 xl:grid-cols-4 gap-5">
-            <JobCard />
-            <JobCard />
-            <JobCard />
-            <JobCard />
-            <JobCard />
+            {category.categories.map((category, index) => (
+              <JobCard key={index} index={index} data={category} />
+            ))}
           </div>
         </div>
       </div>
-      {showCreateCategory && (
-        <CreateCategoryCard createCategory={setShowCreateCategory} />
-      )}
+      {category.showCreateCategory && <CreateCategoryCard />}
     </div>
   );
 }

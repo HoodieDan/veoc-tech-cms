@@ -23,5 +23,19 @@ export interface JobDetail {
   location: string;
   desc: string;
   status: Status;
+  job_type: string;
+  experience: ExperienceLevel;
   action: JobAction;
+  date: string;
 }
+
+export type Tag = {
+  active: boolean;
+  color: string;
+};
+
+export type Category = {
+  name: string;
+  tag: Tag;
+  division: Array<string>;
+};

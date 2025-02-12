@@ -1,18 +1,42 @@
+"use client";
 import React from "react";
 import Label from "./label";
+import { Category } from "../utils/customTypes";
+import { truncateString } from "../utils/helpers";
+import { initUpdate, setShowCreateCategory } from "../reduxStore/categorySlice";
+import { useDispatch } from "react-redux";
 
-function JobCard() {
+interface Params {
+  data: Category;
+  index: number;
+}
+
+function JobCard({ data, index }: Params) {
+  const dispatch = useDispatch();
   return (
     <div className="border border-gray/30 p-4 space-y-5 rounded-lg">
       <div className="flex items-start justify-between">
         <div className="space-y-1">
           <h2 className="text-foreground/70">Department</h2>
-          <div className="flex gap-x-2 text-green-600 text-sm items-center">
-            <div className="h-2 w-2 bg-green-600 rounded-full" /> <p>IT</p>
+          <div
+            className="flex gap-x-2 text-sm items-center"
+            style={{ color: data.tag.color }}
+          >
+            <div
+              className="h-2 w-2 rounded-full"
+              style={{ backgroundColor: data.tag.color }}
+            />{" "}
+            <p>{truncateString(data.name.toUpperCase(), 10)}</p>
           </div>
         </div>
 
-        <div className="rounded-full p-2 cursor-pointer border border-gray/40 bg-gray/20">
+        <button
+          onClick={() => {
+            dispatch(initUpdate(index));
+            dispatch(setShowCreateCategory(true));
+          }}
+          className="rounded-full p-2 cursor-pointer border border-gray/40 bg-gray/20"
+        >
           <svg
             className="h-3 w-3"
             viewBox="0 0 16 16"
@@ -24,20 +48,18 @@ function JobCard() {
               fill="#3E3E3E"
             />
           </svg>
-        </div>
+        </button>
       </div>
 
       <div className="space-y-3">
         <div className="flex text-sm text-foreground/50 items-center justify-between">
           <p>Divisions</p>
-          <p>Total: 5</p>
+          <p>Total: {data.division.length}</p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <Label content="IT Support" />
-          <Label content="Bubble Developer" />
-          <Label content="Flutter Developer" />
-          <Label content="IT Support Inter" />
-          <Label content="UI Developer" />
+          {data.division.map((division, index) => (
+            <Label key={index} content={division} />
+          ))}
         </div>
       </div>
     </div>
