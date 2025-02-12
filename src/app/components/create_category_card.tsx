@@ -52,6 +52,7 @@ function CreateCategoryCard() {
           <div className="flex gap-x-4 items-center">
             {category.tags.map((tag, index) => (
               <div
+                key={index}
                 className={`h-[1.5rem] w-[1.5rem] rounded-full border-2 border-transparent  bg-transparent flex items-center justify-center`}
                 style={{ borderColor: tag.active ? tag.color : "transparent" }}
               >
@@ -102,7 +103,7 @@ function CreateCategoryCard() {
         </div>
         <div className="flex flex-wrap gap-3">
           {category.newCategory.division.map((divison, index) => (
-            <div className="relative">
+            <div key={index} className="relative">
               <button
                 onClick={() => dispatch(removeDivision(index))}
                 className="bg-foreground/60 hover:bg-foreground rounded-full p-[1px] absolute right-1 -top-2"

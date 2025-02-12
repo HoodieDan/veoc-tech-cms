@@ -26,13 +26,13 @@ export const jobActionSlice = createSlice({
       state.action = action.payload;
     },
     handleAction: (state, index: PayloadAction<number>) => {
-      let currentJob = state.jobs[index.payload];
+      const currentJob = state.jobs[index.payload];
       if (state.action && state.action == JobAction.ADD_TO_DRAFTS) {
         currentJob.status = Status.DRAFT;
         state.jobs[index.payload] = currentJob;
       }
       if (state.action && state.action == JobAction.DELETE_JOB) {
-        let filteredJobs = state.jobs.filter((job) => job != currentJob);
+        const filteredJobs = state.jobs.filter((job) => job != currentJob);
         state.jobs = filteredJobs;
       }
     },

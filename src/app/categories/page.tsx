@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import JobCard from "../components/job_card";
 import CreateCategoryCard from "../components/create_category_card";
 import { RootState } from "../reduxStore/store";

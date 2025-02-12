@@ -16,13 +16,7 @@ function Page() {
   const dispatch = useDispatch();
 
   const itemsPerPage = 1;
-  const {
-    currentPage,
-    totalPages,
-    nextPage,
-    prevPage,
-    goToPage,
-  } = usePagination({
+  const { currentPage, totalPages, nextPage, prevPage } = usePagination({
     totalItems: jobAction.jobs.length,
     itemsPerPage,
   });

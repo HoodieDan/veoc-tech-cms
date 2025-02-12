@@ -96,7 +96,7 @@ export const categorySlice = createSlice({
       state.showCreateCategory = action.payload;
     },
     removeDivision: (state, action: PayloadAction<number>) => {
-      let filteredDivisions = state.newCategory.division.filter(
+      const filteredDivisions = state.newCategory.division.filter(
         (_, index) => index !== action.payload
       );
       state.newCategory.division = filteredDivisions;

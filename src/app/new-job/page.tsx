@@ -4,7 +4,7 @@ import Dropdown from "../components/dropdown";
 import { useDispatch, useSelector } from "react-redux";
 import { resetDropdown, toggleDropdown } from "../reduxStore/dropdownSlice";
 import { RootState } from "../reduxStore/store";
-import { ExperienceLevel, JobDetail } from "../utils/customTypes";
+import { ExperienceLevel } from "../utils/customTypes";
 import { saveNewJob, updateNewJob } from "../reduxStore/jobActionSlice";
 
 function Page() {
@@ -13,7 +13,6 @@ function Page() {
   const jobAction = useSelector((state: RootState) => state.jobAction);
 
   const [image, setImage] = useState<string | null>(null);
-  const [newJob, setNewJob] = useState<JobDetail>();
 
   const handleImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files && event.target.files[0]) {
