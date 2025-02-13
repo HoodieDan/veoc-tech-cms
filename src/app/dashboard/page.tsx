@@ -7,12 +7,24 @@ import { RootState } from "../reduxStore/store";
 import JobDescriptionCard from "../components/job_description_card";
 import { useDispatch, useSelector } from "react-redux";
 import { JobAction } from "../utils/customTypes";
-import { mockJobs } from "../utils/mockData";
 import { resetDropdown } from "../reduxStore/dropdownSlice";
+import { usePagination } from "../hooks/usePagination";
+import Link from "next/link";
 
 function Page() {
   const jobAction = useSelector((state: RootState) => state.jobAction);
   const dispatch = useDispatch();
+
+  const itemsPerPage = 1;
+  const { currentPage, totalPages, nextPage, prevPage } = usePagination({
+    totalItems: jobAction.jobs.length,
+    itemsPerPage,
+  });
+
+  const paginatedJobs = jobAction.jobs.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
 
   return (
     <>
@@ -22,33 +34,35 @@ function Page() {
       >
         <div className="flex justify-between items-center">
           <h2 className="font-medium text-lg">Jobs</h2>
-          <button className="px-3 pr-5 py-2 rounded-lg flex bg-accent items-center text-background gap-x-2">
-            <svg
-              width="25"
-              height="24"
-              viewBox="0 0 25 24"
-              fill="none"
-              xmlns="http://www.w3.org/2000/svg"
-            >
-              <g clipPath="url(#clip0_801_8125)">
-                <path
-                  d="M11.5 11V5H13.5V11H19.5V13H13.5V19H11.5V13H5.5V11H11.5Z"
-                  fill="white"
-                />
-              </g>
-              <defs>
-                <clipPath id="clip0_801_8125">
-                  <rect
-                    width="24"
-                    height="24"
+          <Link href={"/new-job"}>
+            <button className="px-3 pr-5 py-2 rounded-lg flex bg-accent items-center text-background gap-x-2">
+              <svg
+                width="25"
+                height="24"
+                viewBox="0 0 25 24"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g clipPath="url(#clip0_801_8125)">
+                  <path
+                    d="M11.5 11V5H13.5V11H19.5V13H13.5V19H11.5V13H5.5V11H11.5Z"
                     fill="white"
-                    transform="translate(0.5)"
                   />
-                </clipPath>
-              </defs>
-            </svg>
-            <p className="">New Job</p>
-          </button>
+                </g>
+                <defs>
+                  <clipPath id="clip0_801_8125">
+                    <rect
+                      width="24"
+                      height="24"
+                      fill="white"
+                      transform="translate(0.5)"
+                    />
+                  </clipPath>
+                </defs>
+              </svg>
+              <p className="">New Job</p>
+            </button>
+          </Link>
         </div>
 
         <div>
@@ -122,7 +136,7 @@ function Page() {
                 <li className="py-1 text-sm px-2 w-[5%]"></li>
               </ul>
             </div>
-            {mockJobs.map((item, index) => (
+            {paginatedJobs.map((item, index) => (
               <JobTableRowCard
                 key={index}
                 checked={false}
@@ -134,6 +148,33 @@ function Page() {
                 index={index}
               />
             ))}
+            <div className="flex justify-end">
+              <div className="flex relative space-x-4 mt-4 items-center">
+                <button
+                  onClick={prevPage}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-1 rounded text-sm bg-accent ${
+                    currentPage == 1 ? "bg-gray" : "bg-accent text-white"
+                  }`}
+                >
+                  Previous
+                </button>
+                <span className="text-sm">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={nextPage}
+                  disabled={currentPage === totalPages}
+                  className={`px-3 py-1 rounded text-sm bg-accent ${
+                    currentPage == totalPages
+                      ? "bg-gray"
+                      : "bg-accent text-white"
+                  }`}
+                >
+                  Next
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>

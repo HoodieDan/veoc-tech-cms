@@ -1,4 +1,11 @@
-import { ExperienceLevel, JobAction, JobDetail, Status } from "./customTypes";
+import {
+  Category,
+  ExperienceLevel,
+  JobAction,
+  JobDetail,
+  Status,
+  Tag,
+} from "./customTypes";
 
 export const mockJobs: JobDetail[] = [
   {
@@ -9,6 +16,9 @@ export const mockJobs: JobDetail[] = [
     desc: "Develop and maintain web applications.",
     status: Status.OPEN,
     action: JobAction.OPEN_JOB,
+    job_type: "",
+    experience: ExperienceLevel.GTE_FIVE,
+    date: "12/22/2024",
   },
   {
     checked: true,
@@ -18,6 +28,9 @@ export const mockJobs: JobDetail[] = [
     desc: "Lead product development and strategy.",
     status: Status.DRAFT,
     action: JobAction.ADD_TO_DRAFTS,
+    job_type: "",
+    experience: ExperienceLevel.ZERO,
+    date: "02/12/2025",
   },
   {
     checked: false,
@@ -27,18 +40,61 @@ export const mockJobs: JobDetail[] = [
     desc: "Design user-friendly experiences and interfaces.",
     status: Status.CLOSED,
     action: JobAction.DELETE_JOB,
+    job_type: "",
+    experience: ExperienceLevel.ZERO,
+    date: "02/22/2025",
   },
 ];
 
-export const locations = [
-  { type: "NGA", action: () => {} },
-  { type: "USA", action: () => {} },
-  { type: "INDIA", action: () => {} },
-  { type: "GHANA", action: () => {} },
+export const jobCategories: Category[] = [
+  {
+    name: "IT",
+    tag: {
+      active: false,
+      color: "#008BB3",
+    },
+    division: [
+      "IT Support",
+      "Bubble Developer",
+      "Flutter Developer",
+      "IT Support Intern",
+      "UI Developer",
+    ],
+  },
+  {
+    name: "Web Development",
+    tag: {
+      active: false,
+      color: "#7E00F1",
+    },
+    division: [
+      "IT Support",
+      "Bubble Developer",
+      "Flutter Developer",
+      "IT Support Intern",
+      "UI Developer",
+    ],
+  },
+  {
+    name: "Mobile Development",
+    tag: {
+      active: false,
+      color: "#0F1928",
+    },
+    division: [
+      "IT Support",
+      "Bubble Developer",
+      "Flutter Developer",
+      "IT Support Intern",
+      "UI Developer",
+    ],
+  },
 ];
 
-export const experiencesLevelDropdown = [
-  { type: ExperienceLevel.ZERO, action: () => {} },
-  { type: ExperienceLevel.GTE_ONE, action: () => {} },
-  { type: ExperienceLevel.GTE_FIVE, action: () => {} },
+export const tags: Tag[] = [
+  { color: "#0F1928", active: false },
+  { color: "#7E00F1", active: true },
+  { color: "#3144F5", active: false },
+  { color: "#008BB3", active: false },
+  { color: "#009A54", active: false },
 ];

@@ -1,14 +1,16 @@
 "use client";
 import React, { useState } from "react";
 import Dropdown from "../components/dropdown";
-import { experiencesLevelDropdown, locations } from "../utils/mockData";
 import { useDispatch, useSelector } from "react-redux";
 import { resetDropdown, toggleDropdown } from "../reduxStore/dropdownSlice";
 import { RootState } from "../reduxStore/store";
+import { ExperienceLevel } from "../utils/customTypes";
+import { saveNewJob, updateNewJob } from "../reduxStore/jobActionSlice";
 
 function Page() {
   const dispatch = useDispatch();
   const dropdown = useSelector((state: RootState) => state.dropdown);
+  const jobAction = useSelector((state: RootState) => state.jobAction);
 
   const [image, setImage] = useState<string | null>(null);
 
@@ -19,6 +21,72 @@ function Page() {
       setImage(imageUrl);
     }
   };
+
+  const handleLocationUpdate = (location: string) => {
+    dispatch(
+      updateNewJob({
+        key: "location",
+        value: location,
+      })
+    );
+  };
+
+  const handleExpLvlUpdate = (expLvl: ExperienceLevel) => {
+    dispatch(
+      updateNewJob({
+        key: "location",
+        value: expLvl,
+      })
+    );
+  };
+
+  const locations = [
+    {
+      type: "NGN",
+      action: () => handleLocationUpdate("NGN"),
+    },
+    {
+      type: "USA",
+      action: () => handleLocationUpdate("USA"),
+    },
+    { type: "INDIA", action: () => handleLocationUpdate("INDIA") },
+    { type: "GHANA", action: () => handleLocationUpdate("GHANA") },
+  ];
+
+  const experiencesLevelDropdown = [
+    {
+      type: ExperienceLevel.ZERO,
+      action: () => handleExpLvlUpdate(ExperienceLevel.ZERO),
+    },
+    {
+      type: ExperienceLevel.GTE_ONE,
+      action: () => handleExpLvlUpdate(ExperienceLevel.GTE_ONE),
+    },
+    {
+      type: ExperienceLevel.GTE_FIVE,
+      action: () => handleExpLvlUpdate(ExperienceLevel.GTE_FIVE),
+    },
+  ];
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawDate = e.target.value; // This is in YYYY-MM-DD format (from input[type="date"])
+
+    if (!rawDate) return;
+
+    const dateObj = new Date(rawDate);
+    const formattedDate = `${
+      dateObj.getMonth() + 1
+    }/${dateObj.getDate()}/${dateObj.getFullYear()}`;
+
+    dispatch(
+      updateNewJob({
+        key: "date",
+        value: formattedDate,
+      })
+    );
+  };
+
+  console.log("state data: ", jobAction.newJob);
 
   return (
     <div
@@ -36,19 +104,37 @@ function Page() {
             <input
               className="border border-gray/40 p-2 px-3 flex outline-none gap-4 h-[2.5rem] w-full items-center rounded text-sm"
               type="text"
+              value={jobAction.newJob?.title}
+              onChange={(e) =>
+                dispatch(
+                  updateNewJob({
+                    key: "title",
+                    value: e.target.value,
+                  })
+                )
+              }
               placeholder="Enter title"
               id="title"
               name="title"
             />
           </div>
           <div className="space-y-2 text-sm">
-            <label htmlFor="job-type">Job Type</label>
+            <label htmlFor="job_type">Job Type</label>
             <input
               className="border border-gray/40 p-2 px-3 flex outline-none gap-4 h-[2.5rem] w-full items-center rounded text-sm"
               type="text"
+              value={jobAction.newJob?.job_type}
+              onChange={(e) =>
+                dispatch(
+                  updateNewJob({
+                    key: "job_type",
+                    value: e.target.value,
+                  })
+                )
+              }
               placeholder="Enter Job Type"
-              id="job-type"
-              name="job-type"
+              id="job_type"
+              name="job_type"
             />
           </div>
           <div className="space-y-2 text-sm">
@@ -81,13 +167,22 @@ function Page() {
             </div>
           </div>
           <div className="space-y-2 text-sm">
-            <label htmlFor="department">Department</label>
+            <label htmlFor="dept">Department</label>
             <input
               className="border border-gray/40 p-2 px-3 flex outline-none gap-4 h-[2.5rem] w-full items-center rounded text-sm"
               type="text"
               placeholder="Enter Department"
-              id="department"
-              name="department"
+              id="dept"
+              name="dept"
+              value={jobAction.newJob?.dept}
+              onChange={(e) =>
+                dispatch(
+                  updateNewJob({
+                    key: "dept",
+                    value: e.target.value,
+                  })
+                )
+              }
             />
           </div>
           <div className="space-y-2 text-sm">
@@ -99,7 +194,7 @@ function Page() {
               <p>
                 {dropdown.dropdowns[1] && dropdown.dropdowns[1].content
                   ? (dropdown.dropdowns[1].content as string)
-                  : "Select location"}
+                  : "Select experience level"}
               </p>
               <svg
                 width="24"
@@ -126,16 +221,31 @@ function Page() {
               type="date"
               id="start-date"
               name="start-date"
+              value={
+                jobAction.newJob?.date
+                  ? new Date(jobAction.newJob.date).toISOString().split("T")[0]
+                  : ""
+              }
+              onChange={handleDateChange}
             />
           </div>
         </div>
         <div className="space-y-2 text-sm">
-          <label htmlFor="job-descrption">Job Description</label>
+          <label htmlFor="desc">Job Description</label>
           <textarea
             className="border border-gray/40 p-2 px-3 flex outline-none gap-4 h-[8rem] w-[60%] items-center rounded text-sm"
             placeholder="Enter Job Description"
-            id="job-descrption"
-            name="job-descrption"
+            id="desc"
+            name="desc"
+            value={jobAction.newJob?.desc}
+            onChange={(e) =>
+              dispatch(
+                updateNewJob({
+                  key: "desc",
+                  value: e.target.value,
+                })
+              )
+            }
           />
         </div>
 
@@ -190,6 +300,15 @@ function Page() {
               </span>
             )}
           </div>
+        </div>
+
+        <div className="w-full flex justify-end">
+          <button
+            onClick={() => dispatch(saveNewJob())}
+            className="px-8 py-2 rounded-lg flex bg-accent items-center text-background gap-x-2"
+          >
+            Save Job
+          </button>
         </div>
       </div>
     </div>

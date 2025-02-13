@@ -4,7 +4,7 @@ import { useDispatch } from "react-redux";
 import { updateDropdownContent } from "../reduxStore/dropdownSlice";
 
 interface Params {
-  items: Array<{ type: string; action: () => void }>;
+  items: Array<{ type: string; action: (index: number) => void }>;
   index: number;
 }
 
@@ -12,10 +12,10 @@ function Dropdown({ items, index }: Params) {
   const dispatch = useDispatch();
   const handleClick = (
     event: React.MouseEvent,
-    item: { type: string; action: () => void }
+    item: { type: string; action: (index: number) => void }
   ) => {
     event.stopPropagation();
-    item.action();
+    item.action(index);
     dispatch(updateDropdownContent({ id: index, content: item.type }));
   };
 
