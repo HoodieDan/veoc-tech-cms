@@ -10,9 +10,14 @@
   },
   "dependencies": {
     "@reduxjs/toolkit": "^2.5.1",
+    "@types/prop-types": "^15.7.14",
     "next": "15.1.6",
+    "prop-types": "^15.8.1",
+    "quill": "^2.0.3",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "react-quill": "^2.0.0",
+    "react-quill-new": "^3.3.3",
     "react-redux": "^9.2.0"
   },
   "devDependencies": {
