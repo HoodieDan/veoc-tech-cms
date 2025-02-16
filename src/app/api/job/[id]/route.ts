@@ -62,3 +62,49 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         return NextResponse.json({ message: "Error updating job", error }, { status: 500 });
     }
 }
+
+
+// GET request to fetch a job by ID
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+    await connectDB(); // Ensure DB is connected
+    const jobId = params.id;
+
+    try {
+        const job = await Job.findById(jobId);
+        if (!job) {
+            return NextResponse.json({ message: "Job not found" }, { status: 404 });
+        }
+
+        return NextResponse.json(job, { status: 200 });
+
+    } catch (error) {
+        console.error("Error fetching job:", error);
+        return NextResponse.json({ message: "Error fetching job", error }, { status: 500 });
+    }
+}
+
+// DELETE request to remove a job by ID
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+    await connectDB(); // Ensure DB is connected
+    const jobId = params.id;
+
+    try {
+        const job = await Job.findByIdAndDelete(jobId);
+        if (!job) {
+            return NextResponse.json({ message: "Job not found" }, { status: 404 });
+        }
+
+        if (job.image) {
+            const oldImagePublicId = extractPublicId(job.image);
+            if (oldImagePublicId) {
+                await cloudinary.uploader.destroy(oldImagePublicId);
+            }
+        }
+
+        return NextResponse.json({ message: "Job deleted successfully" }, { status: 200 });
+
+    } catch (error) {
+        console.error("Error deleting job:", error);
+        return NextResponse.json({ message: "Error deleting job", error }, { status: 500 });
+    }
+}
