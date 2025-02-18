@@ -21,6 +21,7 @@ export async function POST(req: NextRequest) {
 
         return NextResponse.json(newCategory, { status: 201 });
     } catch (error) {
+        console.error("POST Error:", error);  // ✅ Logs error
         return NextResponse.json({ error: "Failed to create category" }, { status: 500 });
     }
 }
@@ -32,6 +33,8 @@ export async function GET() {
 
         return NextResponse.json(categories, { status: 200 });
     } catch (error) {
+        console.error("GET Error:", error);  // ✅ Logs error
+
         return NextResponse.json({ error: "Failed to fetch categories" }, { status: 500 });
     }
 }

@@ -7,12 +7,10 @@ import { Job } from "../../../lib/models/job";
 import cloudinary from "../../utils/cloudinary";
 
 
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    await connectDB();
+    const { id: jobId } = await params;
 
-// PATCH request to update a job by ID
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
-    await connectDB(); // Ensure DB is connected
-    const jobId = params.id;
-    
 
     try {
         const existingJob = await Job.findById(jobId);
@@ -21,25 +19,25 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         }
 
         const formData = await req.formData();
-        const updateData: Record<string, any> = {};
+        const updateData: Record<string, string | File | undefined> = {};
 
 
         for (const [key, value] of formData.entries()) {
             if (key === "image" && value instanceof File) {
                 const arrayBuffer = await value.arrayBuffer();
                 const buffer = Buffer.from(arrayBuffer);
-        
+
                 if (Buffer.isBuffer(buffer)) {
                     const base64Image = `data:${value.type};base64,${buffer.toString("base64")}`;
-        
+
                     const uploadResponse = await cloudinary.uploader.upload(base64Image, {
                         folder: "veoc",
                     });
-        
+
                     if (uploadResponse) {
                         if (existingJob.image) {
                             const oldImagePublicId = extractPublicId(existingJob.image);
-                            
+
                             if (oldImagePublicId) {
                                 await cloudinary.uploader.destroy(oldImagePublicId);
                             }
@@ -51,7 +49,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
                 updateData[key] = value;
             }
         }
-        
+
 
         const updatedJob = await Job.findByIdAndUpdate(jobId, updateData, { new: true });
 
@@ -64,10 +62,10 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 }
 
 
-// GET request to fetch a job by ID
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
-    await connectDB(); // Ensure DB is connected
-    const jobId = params.id;
+
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    await connectDB();
+    const { id: jobId } = await params;
 
     try {
         const job = await Job.findById(jobId);
@@ -84,9 +82,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // DELETE request to remove a job by ID
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
-    await connectDB(); // Ensure DB is connected
-    const jobId = params.id;
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+    await connectDB();
+    const { id: jobId } = await params;
 
     try {
         const job = await Job.findByIdAndDelete(jobId);
