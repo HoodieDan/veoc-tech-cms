@@ -118,8 +118,8 @@ function CreateCategoryCard() {
                   <path
                     d="M2.91797 2.91663L7.08464 7.08329M2.91797 7.08329L7.08464 2.91663"
                     stroke="white"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                   />
                 </svg>
               </button>
