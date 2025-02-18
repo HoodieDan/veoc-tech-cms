@@ -6,6 +6,7 @@ import { resetDropdown, toggleDropdown } from "../reduxStore/dropdownSlice";
 import { RootState } from "../reduxStore/store";
 import { ExperienceLevel } from "../utils/customTypes";
 import { saveNewJob, updateNewJob } from "../reduxStore/jobActionSlice";
+import { Editor } from "../components/editor";
 
 function Page() {
   const dispatch = useDispatch();
@@ -232,7 +233,7 @@ function Page() {
         </div>
         <div className="space-y-2 text-sm">
           <label htmlFor="desc">Job Description</label>
-          <textarea
+          {/* <textarea
             className="border border-gray/40 p-2 px-3 flex outline-none gap-4 h-[8rem] w-[60%] items-center rounded text-sm"
             placeholder="Enter Job Description"
             id="desc"
@@ -246,7 +247,8 @@ function Page() {
                 })
               )
             }
-          />
+          /> */}
+          <Editor />
         </div>
 
         <div className="space-y-2 text-sm">
