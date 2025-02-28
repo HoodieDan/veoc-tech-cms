@@ -1,6 +1,19 @@
-import { PayloadAction, createSlice } from "@reduxjs/toolkit";
+import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { Category, Tag } from "../utils/customTypes";
 import { jobCategories, tags } from "../utils/mockData";
+
+
+export const fetchCategories = createAsyncThunk(
+  "category/fetchCategories",
+  async () => {
+    const response = await fetch("https://your-api.com/categories"); // Replace with actual API
+    if (!response.ok) {
+      throw new Error("Failed to fetch categories");
+    }
+    return await response.json();
+  }
+);
+
 
 interface StateParams {
   newCategory: Category;
@@ -111,6 +124,20 @@ export const categorySlice = createSlice({
       state.updateIndex = action.payload;
       state.newCategory = state.categories[action.payload];
     },
+  },
+
+  extraReducers: (builder) => {
+    builder
+      .addCase(fetchCategories.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchCategories.fulfilled, (state, action) => {
+        state.categories = action.payload;
+        state.loading = false;
+      })
+      .addCase(fetchCategories.rejected, (state) => {
+        state.loading = false;
+      });
   },
 });
 
