@@ -1,16 +1,38 @@
 import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { Category, Tag } from "../utils/customTypes";
 import { jobCategories, tags } from "../utils/mockData";
+import axios, { AxiosError } from "axios";
+
+
+axios.interceptors.request.use((request) => {
+  console.log("Request:", request);
+  return request;
+});
+
+axios.interceptors.response.use(
+  (response) => {
+    console.log("Response:", response);
+    return response;
+  },
+  (error) => {
+    console.error("API Error:", error);
+    return Promise.reject(error);
+  }
+);
 
 
 export const fetchCategories = createAsyncThunk(
   "category/fetchCategories",
-  async () => {
-    const response = await fetch("https://your-api.com/categories"); // Replace with actual API
-    if (!response.ok) {
-      throw new Error("Failed to fetch categories");
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await axios.get("/api/category"); // Replace with actual API
+      console.log("Fetched Categories:", response.data);
+      return response.data;
+    } catch (err) {
+      const error = err as AxiosError<{ message: string }>;
+      console.error("Fetch Categories Error:", error.response?.data);
+      return rejectWithValue(error.response?.data?.message || "Failed to fetch categories");
     }
-    return await response.json();
   }
 );
 
@@ -24,6 +46,7 @@ interface StateParams {
   updating: boolean;
   loading: boolean;
   updateIndex: number | null;
+  error: string | null;
 }
 
 const initialState: StateParams = {
@@ -32,6 +55,7 @@ const initialState: StateParams = {
   updating: false,
   loading: false,
   updateIndex: null,
+  error: null,
   newCategory: {
     name: "",
     tag: { color: "#7E00F1", active: true },
@@ -129,14 +153,19 @@ export const categorySlice = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(fetchCategories.pending, (state) => {
+        console.log("Fetching categories...");
         state.loading = true;
+        state.error = null;
       })
       .addCase(fetchCategories.fulfilled, (state, action) => {
+        console.log("Fetch successful, categories updated");
         state.categories = action.payload;
         state.loading = false;
       })
-      .addCase(fetchCategories.rejected, (state) => {
+      .addCase(fetchCategories.rejected, (state, action) => {
+        console.error("Fetch failed:", action.payload);
         state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
@@ -151,4 +180,5 @@ export const {
   initUpdate,
   removeDivision,
 } = categorySlice.actions;
+
 export default categorySlice.reducer;

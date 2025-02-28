@@ -1,16 +1,22 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import JobCard from "../components/job_card";
 import CreateCategoryCard from "../components/create_category_card";
 import { RootState } from "../reduxStore/store";
 import { useDispatch, useSelector } from "react-redux";
-import { setShowCreateCategory, setUpdating } from "../reduxStore/categorySlice";
+import { fetchCategories, setShowCreateCategory, setUpdating } from "../reduxStore/categorySlice";
 
 function Page() {
   const dispatch = useDispatch();
   const category = useSelector((state: RootState) => state.category);
 
-  return (
+  useEffect(() => {
+    console.log("Dispatching fetchCategories...");
+    dispatch(fetchCategories());
+  }, [dispatch]);
+  
+
+  if(!category.loading) return (
     <div>
       <div className="p-1 space-y-6 pt-8 min-h-[calc(100vh-5rem)] mb-10 relative">
         <div className="flex justify-between items-center">
