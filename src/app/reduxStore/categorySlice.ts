@@ -1,8 +1,7 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { Category, Tag } from "../utils/customTypes";
 import { tags } from "../utils/mockData";
-import { fetchCategories } from "./thunks/categoryThunk";
-
+import { fetchCategories, saveCategory } from "./thunks/categoryThunk";
 
 interface StateParams {
   newCategory: Category;
@@ -16,6 +15,19 @@ interface StateParams {
   error: string | null;
 }
 
+const newCategory = {
+  _id: "",
+  name: "",
+  tag: { active: false, color: "#7E00F1" },
+  division: [
+    "IT Support",
+    "Bubble Developer",
+    "Flutter Developer",
+    "IT Support Intern",
+    "UI Developer",
+  ],
+};
+
 const initialState: StateParams = {
   tags,
   currentDivision: "",
@@ -23,17 +35,7 @@ const initialState: StateParams = {
   loading: false,
   updateIndex: null,
   error: null,
-  newCategory: {
-    name: "",
-    tag: { color: "#7E00F1", active: true },
-    division: [
-      "IT Support",
-      "Bubble Developer",
-      "Flutter Developer",
-      "IT Support Intern",
-      "UI Developer",
-    ],
-  },
+  newCategory,
   categories: [],
   showCreateCategory: false,
 };
@@ -60,44 +62,7 @@ export const categorySlice = createSlice({
     updateCurrentDivision: (state, action: PayloadAction<string>) => {
       state.currentDivision = action.payload;
     },
-    addCategory: (state) => {
-      if (state.updating && state.updateIndex) {
-        state.categories[state.updateIndex] = state.newCategory;
-        state.newCategory = {
-          name: "",
-          tag: {
-            active: false,
-            color: "",
-          },
-          division: [
-            "IT Support",
-            "Bubble Developer",
-            "Flutter Developer",
-            "IT Support Intern",
-            "UI Developer",
-          ],
-        };
-        state.showCreateCategory = false;
-        state.updating = false;
-        state.updateIndex = null;
-        return;
-      }
-      state.categories.push(state.newCategory);
-      state.newCategory = {
-        name: "",
-        tag: {
-          active: false,
-          color: "",
-        },
-        division: [
-          "IT Support",
-          "Bubble Developer",
-          "Flutter Developer",
-          "IT Support Intern",
-          "UI Developer",
-        ],
-      };
-    },
+
     setShowCreateCategory: (state, action: PayloadAction<boolean>) => {
       state.showCreateCategory = action.payload;
     },
@@ -114,6 +79,12 @@ export const categorySlice = createSlice({
       state.updating = true;
       state.updateIndex = action.payload;
       state.newCategory = state.categories[action.payload];
+      state.showCreateCategory = true;
+    },
+    initNew: (state) => {
+      state.updating = false;
+      state.newCategory = newCategory;
+      state.showCreateCategory = true;
     },
   },
 
@@ -133,6 +104,32 @@ export const categorySlice = createSlice({
         console.error("Fetch failed:", action.payload);
         state.loading = false;
         state.error = action.payload as string;
+      })
+
+      .addCase(saveCategory.pending, (state) => {
+        console.log("Saving category...");
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(saveCategory.fulfilled, (state, action) => {
+        console.log("Save successful:", action.payload);
+
+        if (state.updating && state.updateIndex !== null) {
+          state.categories[state.updateIndex] = action.payload;
+        } else {
+          state.categories.push(action.payload);
+        }
+
+        state.newCategory = newCategory;
+        state.showCreateCategory = false;
+        state.updating = false;
+        state.updateIndex = null;
+        state.loading = false;
+      })
+      .addCase(saveCategory.rejected, (state, action) => {
+        console.error("Save failed:", action.payload);
+        state.loading = false;
+        state.error = action.payload as string;
       });
   },
 });
@@ -141,10 +138,10 @@ export const {
   updateCategory,
   changeActiveTag,
   updateCurrentDivision,
-  addCategory,
   setShowCreateCategory,
   setUpdating,
   initUpdate,
+  initNew,
   removeDivision,
 } = categorySlice.actions;
 

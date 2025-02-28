@@ -3,7 +3,7 @@ import React from "react";
 import Label from "./label";
 import { Category } from "../utils/customTypes";
 import { truncateString } from "../utils/helpers";
-import { initUpdate, setShowCreateCategory } from "../reduxStore/categorySlice";
+import { initUpdate } from "../reduxStore/categorySlice";
 import { useDispatch } from "react-redux";
 
 interface Params {
@@ -33,7 +33,6 @@ function JobCard({ data, index }: Params) {
         <button
           onClick={() => {
             dispatch(initUpdate(index));
-            dispatch(setShowCreateCategory(true));
           }}
           className="rounded-full p-2 cursor-pointer border border-gray/40 bg-gray/20"
         >

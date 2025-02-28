@@ -2,18 +2,18 @@
 import React from "react";
 import Label from "./label";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../reduxStore/store";
+import { AppDispatch, RootState } from "../reduxStore/store";
 import {
-  addCategory,
   changeActiveTag,
   removeDivision,
   setShowCreateCategory,
   updateCategory,
   updateCurrentDivision,
 } from "../reduxStore/categorySlice";
+import { saveCategory } from "../reduxStore/thunks/categoryThunk";
 
 function CreateCategoryCard() {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const category = useSelector((state: RootState) => state.category);
   const activeTag = category.tags.find((tag) => tag.active == true);
   console.log(
@@ -135,8 +135,16 @@ function CreateCategoryCard() {
             <p className="">Cancel</p>
           </button>
           <button
-            onClick={() => dispatch(addCategory())}
-            className="px-3 py-2 rounded-lg flex border bg-accent justify-center items-center text-background"
+            disabled={
+              !category.newCategory.name.trim() || !category.newCategory.tag.color
+            }
+            onClick={() => dispatch(saveCategory({category: category.newCategory, updating: category.updating, updateIndex: category.updateIndex}))}  
+            // className="px-3 py-2 rounded-lg flex border bg-accent justify-center items-center text-background"
+            className={`px-3 py-2 rounded-lg flex border justify-center items-center text-background ${
+              !category.newCategory.name.trim() || !category.newCategory.tag.color
+                ? "bg-gray-400 cursor-not-allowed"
+                : "bg-accent"
+            }`}
           >
             <p className="">
               {category.updating ? "Update Category" : "Create new category"}

@@ -35,6 +35,7 @@ export type Tag = {
 };
 
 export type Category = {
+  _id: string;
   name: string;
   tag: Tag;
   division: Array<string>;
