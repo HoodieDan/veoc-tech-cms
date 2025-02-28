@@ -9,6 +9,7 @@ interface StateParams {
   tags: Tag[];
   categories: Category[];
   updating: boolean;
+  loading: boolean;
   updateIndex: number | null;
 }
 
@@ -16,6 +17,7 @@ const initialState: StateParams = {
   tags,
   currentDivision: "",
   updating: false,
+  loading: false,
   updateIndex: null,
   newCategory: {
     name: "",
