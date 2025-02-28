@@ -4,7 +4,7 @@ import JobCard from "../components/job_card";
 import CreateCategoryCard from "../components/create_category_card";
 import { RootState } from "../reduxStore/store";
 import { useDispatch, useSelector } from "react-redux";
-import { setShowCreateCategory } from "../reduxStore/categorySlice";
+import { setShowCreateCategory, setUpdating } from "../reduxStore/categorySlice";
 
 function Page() {
   const dispatch = useDispatch();
@@ -16,7 +16,11 @@ function Page() {
         <div className="flex justify-between items-center">
           <h2 className="font-medium text-lg">Manage Categories</h2>
           <button
-            onClick={() => dispatch(setShowCreateCategory(true))}
+            onClick={() => {
+              dispatch(setShowCreateCategory(true));
+              dispatch(setUpdating(false));
+
+            }}
             className="px-3 pr-5 py-2 rounded-lg flex bg-accent items-center text-background gap-x-2"
           >
             <svg
