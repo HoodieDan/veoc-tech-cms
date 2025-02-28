@@ -1,40 +1,7 @@
-import { PayloadAction, createAsyncThunk, createSlice } from "@reduxjs/toolkit";
+import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { Category, Tag } from "../utils/customTypes";
-import { jobCategories, tags } from "../utils/mockData";
-import axios, { AxiosError } from "axios";
-
-
-axios.interceptors.request.use((request) => {
-  console.log("Request:", request);
-  return request;
-});
-
-axios.interceptors.response.use(
-  (response) => {
-    console.log("Response:", response);
-    return response;
-  },
-  (error) => {
-    console.error("API Error:", error);
-    return Promise.reject(error);
-  }
-);
-
-
-export const fetchCategories = createAsyncThunk(
-  "category/fetchCategories",
-  async (_, { rejectWithValue }) => {
-    try {
-      const response = await axios.get("/api/category"); // Replace with actual API
-      console.log("Fetched Categories:", response.data);
-      return response.data;
-    } catch (err) {
-      const error = err as AxiosError<{ message: string }>;
-      console.error("Fetch Categories Error:", error.response?.data);
-      return rejectWithValue(error.response?.data?.message || "Failed to fetch categories");
-    }
-  }
-);
+import { tags } from "../utils/mockData";
+import { fetchCategories } from "./thunks/categoryThunk";
 
 
 interface StateParams {
@@ -67,7 +34,7 @@ const initialState: StateParams = {
       "UI Developer",
     ],
   },
-  categories: jobCategories,
+  categories: [],
   showCreateCategory: false,
 };
 

@@ -2,12 +2,13 @@
 import React, { useEffect } from "react";
 import JobCard from "../components/job_card";
 import CreateCategoryCard from "../components/create_category_card";
-import { RootState } from "../reduxStore/store";
+import { AppDispatch, RootState } from "../reduxStore/store";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchCategories, setShowCreateCategory, setUpdating } from "../reduxStore/categorySlice";
+import {  setShowCreateCategory, setUpdating } from "../reduxStore/categorySlice";
+import { fetchCategories } from "../reduxStore/thunks/categoryThunk";
 
 function Page() {
-  const dispatch = useDispatch();
+  const dispatch = useDispatch<AppDispatch>();
   const category = useSelector((state: RootState) => state.category);
 
   useEffect(() => {
