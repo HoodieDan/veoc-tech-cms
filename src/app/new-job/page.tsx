@@ -7,6 +7,7 @@ import { RootState } from "../reduxStore/store";
 import { ExperienceLevel } from "../utils/customTypes";
 import { saveNewJob, updateNewJob } from "../reduxStore/jobActionSlice";
 import { Editor } from "../components/editor";
+import Image from "next/image";
 
 function Page() {
   const dispatch = useDispatch();
@@ -256,7 +257,7 @@ function Page() {
           <div className="h-[13rem] w-[60%] rounded-lg relative overflow-hidden bg-foreground/15 flex items-center justify-center cursor-pointer">
             {/* Image Preview */}
             {image && (
-              <img
+              <Image
                 src={image}
                 alt="Uploaded preview"
                 className="w-full h-full object-cover absolute"
