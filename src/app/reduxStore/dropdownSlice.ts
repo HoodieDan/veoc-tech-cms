@@ -70,4 +70,5 @@ export const {
   updateDropdownContent,
   resetDropdown,
 } = dropdownSlice.actions;
+
 export default dropdownSlice.reducer;

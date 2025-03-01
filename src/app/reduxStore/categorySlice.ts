@@ -11,6 +11,8 @@ interface StateParams {
   categories: Category[];
   updating: boolean;
   loading: boolean;
+  submitting: boolean;
+
   updateIndex: number | null;
   error: string | null;
 }
@@ -33,6 +35,7 @@ const initialState: StateParams = {
   currentDivision: "",
   updating: false,
   loading: false,
+  submitting: false,
   updateIndex: null,
   error: null,
   newCategory,
@@ -104,11 +107,14 @@ export const categorySlice = createSlice({
         console.error("Fetch failed:", action.payload);
         state.loading = false;
         state.error = action.payload as string;
+
+        alert(state.error);
+
       })
 
       .addCase(saveCategory.pending, (state) => {
         console.log("Saving category...");
-        state.loading = true;
+        state.submitting = true;
         state.error = null;
       })
       .addCase(saveCategory.fulfilled, (state, action) => {
@@ -124,12 +130,14 @@ export const categorySlice = createSlice({
         state.showCreateCategory = false;
         state.updating = false;
         state.updateIndex = null;
-        state.loading = false;
+        state.submitting = false;
       })
       .addCase(saveCategory.rejected, (state, action) => {
         console.error("Save failed:", action.payload);
-        state.loading = false;
+        state.submitting = false;
         state.error = action.payload as string;
+
+        alert(state.error);
       });
   },
 });

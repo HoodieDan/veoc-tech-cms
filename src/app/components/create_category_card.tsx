@@ -16,11 +16,8 @@ function CreateCategoryCard() {
   const dispatch = useDispatch<AppDispatch>();
   const category = useSelector((state: RootState) => state.category);
   const activeTag = category.tags.find((tag) => tag.active == true);
-  console.log(
-    "categories: ",
-    category.categories,
-    category.newCategory,
-    category.tags
+  const cannotSubmit = Boolean(
+    !category.newCategory.name.trim() || !category.newCategory.tag.color
   );
 
   return (
@@ -135,20 +132,35 @@ function CreateCategoryCard() {
             <p className="">Cancel</p>
           </button>
           <button
-            disabled={
-              !category.newCategory.name.trim() || !category.newCategory.tag.color
+            disabled={cannotSubmit || category.submitting}
+            onClick={() =>
+              dispatch(
+                saveCategory({
+                  category: category.newCategory,
+                  updating: category.updating,
+                  updateIndex: category.updateIndex,
+                })
+              )
             }
-            onClick={() => dispatch(saveCategory({category: category.newCategory, updating: category.updating, updateIndex: category.updateIndex}))}  
-            // className="px-3 py-2 rounded-lg flex border bg-accent justify-center items-center text-background"
-            className={`px-3 py-2 rounded-lg flex border justify-center items-center text-background ${
-              !category.newCategory.name.trim() || !category.newCategory.tag.color
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-accent"
+            className={`px-3 py-2 rounded-lg flex border justify-center items-center text-background min-w-[150px] ${
+              cannotSubmit ? "bg-gray-400" : "bg-accent"
             }`}
           >
-            <p className="">
+            {/* <p className="">
               {category.updating ? "Update Category" : "Create new category"}
-            </p>
+            </p> */}
+
+            {category.submitting ? (
+                <div className="flex space-x-1">
+                <span className="w-2 h-2 bg-white rounded-full animate-bounce [animation-delay:0s]"></span>
+                <span className="w-2 h-2 bg-white rounded-full animate-bounce [animation-delay:0.2s]"></span>
+                <span className="w-2 h-2 bg-white rounded-full animate-bounce [animation-delay:0.4s]"></span>
+              </div>
+            ) : (
+              <p>
+                {category.updating ? "Update Category" : "Create new category"}
+              </p>
+            )}
           </button>
         </div>
       </div>

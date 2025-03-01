@@ -15,7 +15,7 @@ function Page() {
   const jobAction = useSelector((state: RootState) => state.jobAction);
   const dispatch = useDispatch();
 
-  const itemsPerPage = 1;
+  const itemsPerPage = 2;
   const { currentPage, totalPages, nextPage, prevPage } = usePagination({
     totalItems: jobAction.jobs.length,
     itemsPerPage,

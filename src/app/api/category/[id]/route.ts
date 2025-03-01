@@ -4,6 +4,7 @@ import { Category } from "../../../lib/models/category";
 
 // UPDATE a category by ID (PATCH)
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+
     try {
         await connectDB();
         const { id } = await params;
