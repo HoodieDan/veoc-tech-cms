@@ -1,5 +1,4 @@
 import {
-  Category,
   ExperienceLevel,
   JobAction,
   JobDetail,
@@ -46,50 +45,6 @@ export const mockJobs: JobDetail[] = [
   },
 ];
 
-export const jobCategories: Category[] = [
-  {
-    name: "IT",
-    tag: {
-      active: false,
-      color: "#008BB3",
-    },
-    division: [
-      "IT Support",
-      "Bubble Developer",
-      "Flutter Developer",
-      "IT Support Intern",
-      "UI Developer",
-    ],
-  },
-  {
-    name: "Web Development",
-    tag: {
-      active: false,
-      color: "#7E00F1",
-    },
-    division: [
-      "IT Support",
-      "Bubble Developer",
-      "Flutter Developer",
-      "IT Support Intern",
-      "UI Developer",
-    ],
-  },
-  {
-    name: "Mobile Development",
-    tag: {
-      active: false,
-      color: "#0F1928",
-    },
-    division: [
-      "IT Support",
-      "Bubble Developer",
-      "Flutter Developer",
-      "IT Support Intern",
-      "UI Developer",
-    ],
-  },
-];
 
 export const tags: Tag[] = [
   { color: "#0F1928", active: false },
