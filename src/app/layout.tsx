@@ -17,7 +17,7 @@ export default function RootLayout({
   return (
     <Provider store={store}>
       <html lang="en">
-        <body className="flex">
+        <body className="flex font-sans">
           {!isPreviewPage && <Sidebar />}
           <section
             className={`${
