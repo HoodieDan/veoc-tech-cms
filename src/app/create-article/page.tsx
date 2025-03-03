@@ -211,7 +211,9 @@ const CreateArticle = () => {
             {/* Submit Button */}
             <div className="flex gap-4 items-center">
               <Link href="/preview" className="text-accent" >Save as draft</Link>
-              <Button className="bg-accent hover:bg-accent/90" type="submit">Preview</Button>
+              <Link href="/preview" className="text-accent" >
+                <Button className="bg-accent hover:bg-accent/90" type="submit">Preview</Button>
+              </Link>
             </div>
           </div>
         </form>

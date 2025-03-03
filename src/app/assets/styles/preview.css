@@ -1,0 +1,24 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100..900;1,100..900&display=swap');
+
+@font-face {
+    font-family: "Cabinet Grotesk Variable";
+    src: url("https://db.onlinewebfonts.com/t/63e7e31dbe7aa38c7c04b413ef841103.eot");
+    src: url("https://db.onlinewebfonts.com/t/63e7e31dbe7aa38c7c04b413ef841103.eot?#iefix")format("embedded-opentype"),
+    url("https://db.onlinewebfonts.com/t/63e7e31dbe7aa38c7c04b413ef841103.woff2")format("woff2"),
+    url("https://db.onlinewebfonts.com/t/63e7e31dbe7aa38c7c04b413ef841103.woff")format("woff"),
+    url("https://db.onlinewebfonts.com/t/63e7e31dbe7aa38c7c04b413ef841103.ttf")format("truetype"),
+    url("https://db.onlinewebfonts.com/t/63e7e31dbe7aa38c7c04b413ef841103.svg#Cabinet Grotesk Variable")format("svg");
+}
+
+.blog__writeup {
+    font-family: "Inter Tight";
+    background: 
+    radial-gradient(circle, rgba(101, 2, 180, 0.20) 0%, rgba(101, 2, 180, 0) 70%) top left / 600px 600px no-repeat,
+    radial-gradient(circle, rgba(101, 2, 180, 0.20) 0%, rgba(101, 2, 180, 0) 70%) bottom right / 500px 500px no-repeat,
+    radial-gradient(circle, rgba(101, 2, 180, 0.20) 0%, rgba(101, 2, 180, 0) 70%) 80% 20% / 750px 750px no-repeat;
+    background-color: #0B0214;
+}
+
+h1 {
+    font-family: "Cabinet Grotesk Variable";
+}
