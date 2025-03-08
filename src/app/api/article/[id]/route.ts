@@ -9,7 +9,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         await connectDB();
 
         const { id } = await params;
-        const { title, coOwners, tags, content } = await req.json();
+        const { title, author, tags, content, status } = await req.json();
 
         const existingArticle = await Article.findById(id);
         if (!existingArticle) {
@@ -19,13 +19,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
         const oldImageUrls = existingArticle.content
             .filter((item: any) => item.type === "image")
-            .map((item: any) => item.imagePath);
+            .map((item: any) => item.imageFile);
 
         const updatedContent = await Promise.all(
             content.map(async (item: any) => {
                 if (item.type === "image" && item.imageFile?.startsWith("data:image")) {
                     const uploadResponse = await cloudinary.uploader.upload(item.imageFile, { folder: "veoc" });
-                    return { type: "image", imagePath: uploadResponse.secure_url };
+                    return { type: "image", imageFile: uploadResponse.secure_url };
                 }
                 return item;
             })
@@ -33,7 +33,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
         const newImageUrls = updatedContent
             .filter((item: any) => item.type === "image")
-            .map((item: any) => item.imagePath);
+            .map((item: any) => item.imageFile);
 
 
         const imagesToDelete = oldImageUrls.filter((url: string) => !newImageUrls.includes(url));
@@ -51,7 +51,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
         const updatedArticle = await Article.findByIdAndUpdate(
             id,
-            { title, coOwners, tags, content: updatedContent },
+            { title, author, tags, content: updatedContent, status },
             { new: true, runValidators: true }
         );
 
@@ -96,7 +96,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
         const imageUrls = article.content
             .filter((item: any) => item.type === "image")
-            .map((item: any) => item.imagePath);
+            .map((item: any) => item.imageFile);
 
         await Promise.all(
             imageUrls.map(async (url: string) => {

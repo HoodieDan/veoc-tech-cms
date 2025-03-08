@@ -1,84 +1,88 @@
 "use client"
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import ArticlesTable, { Articles } from '../components/articles-table';
 import { Button } from '@/components/ui/button';
 import Link from "next/link";
 import { Plus } from 'lucide-react';
 import HighlightCard from '../components/highlight_card';
+import axios from 'axios';
+import { useRouter } from 'next/navigation';
 
 const ArticlesPage: React.FC = () => {
 
-    const stats = [
-        { id: 1, subtext: "Open Job Listings", text: "5000" },
-        { id: 2, subtext: "Closed Job Listings", text: "2500" },
-        { id: 3, subtext: "Drafts", text: "1500" },
-    ]
+  const [articles, setArticles] = useState<Articles[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const router = useRouter()
 
-    const data: Articles[] = [
-        {
-          id: "m5gr84i9",
-          title: 'The Picture of Dorian Gray',
-          author: 'Oscar Wilde',
-          date: 'Mar 1, 2025',
-          status: "drafts",
-        },
-        {
-          id: "3u1reuv4",
-          title: 'The Poems of Oscar Wilde',
-          author: 'Oscar Wilde',
-          date: 'Mar 1, 2025',
-          status: "published",
-        },
-        {
-          id: "derv1ws0",
-          title: 'The Nightingale and The Rose',
-          author: 'Oscar Wilde',
-          date: 'Mar 1, 2025',
-          status: "drafts",
-        },
-        {
-          id: "5kma53ae",
-          title: 'Cusentos De Oscar Wilde',
-          author: 'Oscar Wilde',
-          date: 'Mar 1, 2025',
-          status: "published",
-        },
-        {
-          id: "bhqecj4p",
-          title: 'The Ballad of Reading Gaol',
-          author: 'Oscar Wilde',
-          date: 'Mar 1, 2025',
-          status: "drafts",
-        },
-      ]
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        const { data } = await axios.get("/api/article");
 
-    return (
-        <div className='p-4'>
-            <h3 className='font-bold text-3xl mb-3'>Dashboard Overview</h3>
+        if (data.success) {
+          const formattedArticles = data.articles.map((article: any) => ({
+            id: article._id,
+            ...article
+          }));
 
-            <div className='mb-5'>
-                <div className="flex justify-between space-x-8">
-                    {stats.map((item) => (
-                    <HighlightCard
-                        key={item.id}
-                        subtext={item.subtext}
-                        text={item.text}
-                    />
-                    ))}
-                </div>
-            </div>
+          setArticles(formattedArticles);
+        }
+      } catch (error) {
+        setLoading(false);
 
-            <div className="flex justify-between">
-                <h3 className='font-bold text-3xl'>Articles</h3>
+        console.error("Error fetching articles:", error);
+        alert(error)
+      } finally {
+        setLoading(false);
+      }
+    };
 
-                <Link href="/create-article">
-                    <Button className="bg-accent hover:bg-accent/90 px-6 py-3"> <Plus /> New Article</Button>
-                </Link>
-            </div>
+    fetchArticles();
+  }, []);
 
-            <ArticlesTable data={data} />
+
+  const stats = [
+    { id: 1, subtext: "Open Job Listings", text: "5000" },
+    { id: 2, subtext: "Closed Job Listings", text: "2500" },
+    { id: 3, subtext: "Drafts", text: "1500" },
+  ]
+
+  return (
+    <div className='p-4'>
+      <h3 className='font-bold text-3xl mb-3'>Dashboard Overview</h3>
+
+      <div className='mb-5'>
+        <div className="flex justify-between space-x-8">
+          {stats.map((item) => (
+            <HighlightCard
+              key={item.id}
+              subtext={item.subtext}
+              text={item.text}
+            />
+          ))}
         </div>
-    );
+      </div>
+
+      <div className="flex justify-between">
+        <h3 className='font-bold text-3xl'>Articles</h3>
+
+        <Link href="/create-article">
+          <Button className="bg-accent hover:bg-accent/90 px-6 py-3" onClick={() => {
+            localStorage.removeItem("create")
+            localStorage.removeItem("view")
+
+            router.push("/create-article")
+          }}> <Plus /> New Article</Button>
+        </Link>
+      </div>
+      {loading ? (<div className="flex justify-center items-center h-32">
+        <div className="animate-spin rounded-full h-12 w-12 border-[5px] border-transparent border-t-accent border-l-accent"></div>
+      </div>) : (<ArticlesTable data={articles} onDeleteArticle={(id: string) => setArticles((prev) => prev.filter(a => a.id !== id))} />)}
+
+
+
+    </div>
+  );
 };
 
 export default ArticlesPage;

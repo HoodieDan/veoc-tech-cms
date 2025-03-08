@@ -1,6 +1,6 @@
 "use client";
 import { z } from "zod";
-import React, { } from "react";
+import React, { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
 import { Button } from "@/components/ui/button";
@@ -9,48 +9,124 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { GripVertical } from "lucide-react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import axios from "axios";
 
 const formSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
-  coOwners: z.string().min(2, { message: "Co-Owners must be at least 2 characters." }),
-  tags: z.string().min(2, { message: "Tags must be at least 2 characters." }),
+  author: z.string().min(2, { message: "Co-Owners must be at least 2 characters." }),
+  tags: z
+    .string()
+    .min(2, { message: "Tags must be at least 2 characters." })
+    .refine((value) => value.split(",").every((tag) => tag.trim().length > 0), {
+      message: "Each tag must be non-empty and separated by commas.",
+    }),
+
   content: z.array(
-    z.object({
-      type: z.enum(["paragraph", "image"]),
-      paragraphTitle: z.string().optional(),
-      paragraphText: z.string().optional(),
-      imageFile: z.string().optional(),
-    })
+    z.discriminatedUnion("type", [
+      z.object({
+        type: z.literal("paragraph"),
+        paragraphTitle: z.string().min(1, { message: "Paragraph title is required." }),
+        paragraphText: z.string().min(1, { message: "Paragraph text is required." }),
+      }),
+      z.object({
+        type: z.literal("image"),
+        imageFile: z.string().min(1, { message: "Image file URL is required." }),
+      }),
+    ])
   ),
 });
 
+
 const CreateArticle = () => {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [savedDraft, setSavedDraft] = useState<any>({
+    title: "",
+    author: "",
+    tags: "",
+    content: [],
+  })
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
-      coOwners: "",
+      author: "",
       tags: "",
       content: [],
     },
   });
 
-  const { control, handleSubmit } = form;
+  const { control, handleSubmit, reset } = form;
   const { fields, append, remove, insert } = useFieldArray({
     control,
     name: "content",
   });
 
-  const onSubmit = (values: z.infer<typeof formSchema>) => {
-    const jsonData = JSON.stringify(values, null, 2); // Convert to formatted JSON
-    console.log(jsonData); // Log the JSON (optional)
-  
-    // Example: Copy JSON to clipboard
-    navigator.clipboard.writeText(jsonData).then(() => {
-      alert("Form data copied to clipboard!");
-    });
+  useEffect(() => {
+    const draft = localStorage.getItem("create");
+
+    if (draft) {
+      reset(JSON.parse(draft));
+      setSavedDraft(JSON.parse(draft))
+    }
+    setLoading(false);
+  }, [reset]);
+
+  const onPreview = (values: z.infer<typeof formSchema>) => {
+    const updatedDraft = { ...savedDraft, ...values };
+
+    setSavedDraft(() => updatedDraft)
+    localStorage.setItem("create", JSON.stringify(updatedDraft));
+
+    router.push("/preview?type=create");
   };
+
+
+  const onSaveAsDrafts = async (values: z.infer<typeof formSchema>) => {
+    const updatedDraft = { ...savedDraft, ...values };
+    console.log(updatedDraft);
+    console.log(savedDraft);
+
+    setSubmitting(true);
+    try {
+      const url = updatedDraft.id
+        ? `/api/article/${updatedDraft.id}`  // Update existing article
+        : "/api/article";  // Create new article
+
+      console.log(updatedDraft.id);
+
+
+      const method = updatedDraft.id ? "patch" : "post"; // Decide HTTP method
+
+      const { data } = await axios({
+        method,
+        url,
+        data: { ...updatedDraft, status: "drafts" },
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const article = data.article
+      const formattedArticle = { ...article, id: article._id }
+      console.log(formattedArticle);
+
+      setSavedDraft(() => formattedArticle)
+      localStorage.setItem("create", JSON.stringify(formattedArticle));
+
+
+
+    } catch (error) {
+      console.error(error);
+      alert(error || "Failed to publish article");
+    } finally {
+      setSubmitting(false);
+    }
+
+  };
+
 
   const handleImageUpload = (file: File, index: number) => {
     const reader = new FileReader();
@@ -63,7 +139,7 @@ const CreateArticle = () => {
   return (
     <div className="mx-auto p-6">
       <Form {...form}>
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <form onSubmit={handleSubmit(onPreview)} className="space-y-6">
           {/* Title */}
           <FormField
             control={control}
@@ -81,7 +157,7 @@ const CreateArticle = () => {
           {/* Co-Owners */}
           <FormField
             control={control}
-            name="coOwners"
+            name="author"
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Co-Owners</FormLabel>
@@ -106,6 +182,7 @@ const CreateArticle = () => {
               </FormItem>
             )}
           />
+
 
           {/* Dynamic Content (Paragraphs & Images) */}
           {fields.map((field, index) => (
@@ -216,9 +293,21 @@ const CreateArticle = () => {
 
             {/* Submit Button */}
             <div className="flex gap-4 items-center">
-              <Link href="/preview" className="text-accent" >Save as draft</Link>
               {/* <Link href="/preview" className="text-accent" > */}
-                <Button className="bg-accent hover:bg-accent/90" type="submit">Preview</Button>
+              <Button
+                onClick={handleSubmit(onSaveAsDrafts)}
+                className="bg-accent hover:bg-accent/90"
+                disabled={submitting}
+              >
+                {submitting
+                  ? "Saving..."
+                  : savedDraft?.status === "drafts"
+                    ? "Saved!"
+                    : "Save as draft"}
+              </Button>
+
+              <Button className="bg-accent hover:bg-accent/90" type="submit">Preview</Button>
+
               {/* </Link> */}
             </div>
           </div>
