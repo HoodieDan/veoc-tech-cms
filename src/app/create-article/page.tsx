@@ -43,7 +43,13 @@ const CreateArticle = () => {
   });
 
   const onSubmit = (values: z.infer<typeof formSchema>) => {
-    console.log(values);
+    const jsonData = JSON.stringify(values, null, 2); // Convert to formatted JSON
+    console.log(jsonData); // Log the JSON (optional)
+  
+    // Example: Copy JSON to clipboard
+    navigator.clipboard.writeText(jsonData).then(() => {
+      alert("Form data copied to clipboard!");
+    });
   };
 
   const handleImageUpload = (file: File, index: number) => {
@@ -211,9 +217,9 @@ const CreateArticle = () => {
             {/* Submit Button */}
             <div className="flex gap-4 items-center">
               <Link href="/preview" className="text-accent" >Save as draft</Link>
-              <Link href="/preview" className="text-accent" >
+              {/* <Link href="/preview" className="text-accent" > */}
                 <Button className="bg-accent hover:bg-accent/90" type="submit">Preview</Button>
-              </Link>
+              {/* </Link> */}
             </div>
           </div>
         </form>
