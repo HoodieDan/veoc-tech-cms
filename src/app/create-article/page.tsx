@@ -301,9 +301,7 @@ const CreateArticle = () => {
               >
                 {submitting
                   ? "Saving..."
-                  : savedDraft?.status === "drafts"
-                    ? "Saved!"
-                    : "Save as draft"}
+                  : "Save as draft"}
               </Button>
 
               <Button className="bg-accent hover:bg-accent/90" type="submit">Preview</Button>

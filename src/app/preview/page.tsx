@@ -82,7 +82,7 @@ const BlogWriteup: React.FC = () => {
 
                         }}> <ChevronLeft /> Go Back</Link>
 
-                        {article?.status === "drafts" && (
+                        {(article?.status === "drafts" || type === "create") && (
                             <div className="flex items-center gap-4">
                                 <Button className="bg-accent" onClick={handlePublish} disabled={submitting}>
                                     {submitting ? "Publishing..." : "Publish"}
