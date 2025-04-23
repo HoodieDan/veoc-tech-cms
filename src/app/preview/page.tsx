@@ -28,6 +28,8 @@ const BlogWriteup: React.FC = () => {
     useEffect(() => {
 
         const savedArticle = localStorage.getItem(type);
+        console.log(savedArticle);
+        
 
         if (!savedArticle) {
             router.replace("/articles");
@@ -125,7 +127,7 @@ const BlogWriteup: React.FC = () => {
 
                     </div>
 
-                    <Image src={blogImage} alt="blog image" className="my-4" />
+                    <Image src={article?.coverImage || blogImage} alt="blog image" className="my-4" width={700} height={300} />
 
                     <div className="writeup flex flex-wrap mt-5">
                         <div className="w-full lg:w-1/3 mb-4 text-gray">

@@ -6,6 +6,7 @@ const ArticleSchema = new mongoose.Schema(
     title: { type: String, required: true, trim: true },
     author: { type: String },
     tags: { type: String },
+    coverImage: { type: String }, // Add this line
     content: [{ type: Object, required: true }],
     status: { type: String, default: "published" },
     date: { type: String } // Formatted date stored here

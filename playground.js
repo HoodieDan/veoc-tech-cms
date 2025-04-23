@@ -157,6 +157,7 @@ const CreateArticle = () => {
     }
   };
 
+  // --- 4. Create Cover Image Upload Handler ---
   const handleCoverImageUpload = (file: File) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -303,37 +304,36 @@ const CreateArticle = () => {
 
               {/* Content Fields */}
               <div className="flex-1 space-y-4"> {/* Added space-y */}
-              {field.type === "paragraph" && (
-                <div className="space-y-2 flex-1">
-                  <FormField
-                    control={control}
-                    name={`content.${index}.paragraphTitle`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Paragraph Title</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter paragraph title" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={control}
-                    name={`content.${index}.paragraphText`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Paragraph Text</FormLabel>
-                        <FormControl>
-                          <Textarea placeholder="Enter paragraph text" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              )}
-
+                {field.type === "paragraph" && (
+                  <>
+                    <FormField
+                      control={control}
+                      name={`content.${index}.paragraphTitle`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Paragraph Title</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Optional section title" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={control}
+                      name={`content.${index}.paragraphText`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel className="text-sm font-medium">Paragraph Text</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Write your content here..." {...field} rows={5} /> {/* Added rows */}
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
 
                 {field.type === "image" && (
                   <FormField

@@ -42,6 +42,7 @@ export type Articles = {
   author: string;
   date: string;
   tags: string;
+  coverImage: string;
   status: "drafts" | "published";
   content: { type: "image" | "paragraph"; paragraphTitle?: string; paragraphText: string; imageFile: string }[]
 };
