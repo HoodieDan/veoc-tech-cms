@@ -20,12 +20,14 @@ const BlogWriteup: React.FC = () => {
     const searchParams = useSearchParams()
     const type = searchParams.get("type");
 
-    if (type !== "create" && type !== "view") {
-        router.replace("/articles");
-        return;
-    }
 
     useEffect(() => {
+
+        if (type !== "create" && type !== "view") {
+            router.replace("/articles");
+            return;
+        }
+    
 
         const savedArticle = localStorage.getItem(type);
         console.log(savedArticle);
@@ -38,7 +40,7 @@ const BlogWriteup: React.FC = () => {
         const parsedArticle = JSON.parse(savedArticle);
         setLoading(false);
         setArticle(parsedArticle);
-    }, []);
+    }, [type, router]);
 
 
 
@@ -97,7 +99,7 @@ const BlogWriteup: React.FC = () => {
 
 
                     <div className="flex flex-wrap gap-3">
-                        {article?.tags.split(",").map((tag: string) => tag.trim()).map((tag: any, index: number) => (
+                        {article?.tags.split(",").map((tag: string) => tag.trim()).map((tag: string, index: number) => (
                             <div key={index} className="border rounded-[32px] px-5 py-3">
                                 <p>{tag.trim()}</p>
                             </div>

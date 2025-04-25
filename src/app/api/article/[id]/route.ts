@@ -25,11 +25,11 @@ const patchRequestSchema = z.object({
 });
 
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) { // Removed Promise from params type
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) { // Removed Promise from params type
     try {
         await connectDB();
 
-        const { id } = params; // Directly access id from params
+        const { id } = await params; // Directly access id from params
         if (!id) {
             return NextResponse.json({ success: false, error: "Article ID is required" }, { status: 400 });
         }
@@ -78,11 +78,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
         if (content) { // Only process content if it was provided in the patch request
             const oldImageUrls = existingArticle.content
-                .filter((item: any) => item.type === "image" && item.imageFile)
-                .map((item: any) => item.imageFile);
+                .filter((item: { type: string; imageFile: string | undefined }) => item.type === "image" && item.imageFile)
+                .map((item: { imageFile: string }) => item.imageFile);
 
             updatedContent = await Promise.all(
-                content.map(async (item: any) => {
+                content.map(async (item: { type: "paragraph" | "image"; paragraphTitle?: string; paragraphText?: string; imageFile?: string }) => {
                     if (item.type === "image" && item.imageFile?.startsWith("data:image")) {
                         console.log("Uploading content image...");
                         try {
@@ -91,7 +91,6 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
                             return { ...item, imageFile: uploadResponse.secure_url }; // Update with new URL
                         } catch (uploadError) {
                             console.error("Cloudinary content image upload error:", uploadError);
-                            // Decide how to handle: skip upload, return original item, or fail request
                             return item; // Returning original item for now
                         }
                     }
@@ -100,8 +99,8 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
             );
 
             const newImageUrls = updatedContent
-                .filter((item: any) => item.type === "image" && item.imageFile)
-                .map((item: any) => item.imageFile);
+                .filter((item: { type: string; imageFile?: string }) => item.type === "image" && item.imageFile)
+                .map((item: { type: string; imageFile?: string }) => item.imageFile);
 
             imagesToDelete = oldImageUrls.filter((url: string) => url && url.includes('cloudinary') && !newImageUrls.includes(url));
         }
@@ -135,7 +134,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         }
 
         // --- Prepare Update Payload ---
-        const updatePayload: any = {};
+        const updatePayload: Partial<{
+            title: string;
+            author: string;
+            tags: string;
+            content: Array<{ type: "paragraph" | "image"; paragraphTitle?: string; paragraphText?: string; imageFile?: string }>;
+            status: string;
+            coverImage: string;
+        }> = {};
         if (title !== undefined) updatePayload.title = title;
         if (author !== undefined) updatePayload.author = author;
         if (tags !== undefined) updatePayload.tags = tags;
@@ -167,11 +173,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
 
 // --- GET Function (No changes needed for coverImage) ---
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         await connectDB();
 
-        const { id } = params;
+        const { id } = await params;
         if (!id) {
             return NextResponse.json({ success: false, error: "Article ID is required" }, { status: 400 });
         }
@@ -190,11 +196,11 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
 
 // --- Update DELETE Function ---
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     try {
         await connectDB();
 
-        const { id } = params;
+        const { id } = await params;
         if (!id) {
             return NextResponse.json({ success: false, error: "Article ID is required" }, { status: 400 });
         }
@@ -213,7 +219,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         }
 
         // Add content image URLs if they exist and are from Cloudinary
-        article.content.forEach((item: any) => {
+        article.content.forEach((item: { type: "paragraph" | "image"; imageFile?: string }) => {
             if (item.type === "image" && item.imageFile && item.imageFile.includes('cloudinary')) {
                 imageUrlsToDelete.push(item.imageFile);
             }

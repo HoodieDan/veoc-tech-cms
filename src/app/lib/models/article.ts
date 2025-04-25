@@ -25,10 +25,10 @@ ArticleSchema.pre("save", function (next) {
 });
 
 ArticleSchema.pre("findOneAndUpdate", function (next) {
-  const update = this.getUpdate() as Record<string, any>; // Explicitly type as an object
+  const update = this.getUpdate() as Record<string, unknown>; // Explicitly type as an object
   if (update) {
     update.$set = update.$set || {};
-    update.$set.date = new Date().toLocaleDateString("en-US", {
+    (update.$set as Record<string, unknown>).date = new Date().toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
       day: "numeric"

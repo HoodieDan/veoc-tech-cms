@@ -4,17 +4,14 @@ import connectDB from "../../../utils/db"; // Adjust path as needed
 import { Job } from "../../../../lib/models/job"; // Adjust path as needed
 import { Status } from "../../../../utils/customTypes"; // Import Status enum
 
-interface RouteParams {
-  id: string;
-}
 
 // Helper function for ObjectId validation
 const isValidObjectId = (id: string) => mongoose.Types.ObjectId.isValid(id);
 
 // PATCH handler specifically for updating job status
-export async function PATCH(req: NextRequest, { params }: { params: RouteParams }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     await connectDB();
-    const jobId = await params.id;
+    const jobId = (await params).id;
 
     // --- ID Validation ---
     if (!isValidObjectId(jobId)) {

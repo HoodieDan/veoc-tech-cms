@@ -6,7 +6,13 @@ function TopNav() {
     <div className="w-[80%] fixed top-0 z-10 right-0 h-[5rem] bg-white flex justify-between items-center px-10">
       <h1 className="text-xl">Welcome Admin</h1>
 
-      <Search height="3rem" width="33rem" placeholder={"Search anything"} />
+      <Search
+        height="3rem"
+        width="33rem"
+        placeholder={"Search anything"}
+        value=""
+        onChange={(e) => console.log(e.target.value)}
+      />
 
       <div className="flex gap-2 p-2 items-center">
         <div className="flex items-center justify-center rounded-lg border border-gray/40 bg-gray/20 h-[3rem] w-[3rem]">

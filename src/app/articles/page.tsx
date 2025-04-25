@@ -20,7 +20,7 @@ const ArticlesPage: React.FC = () => {
         const { data } = await axios.get("/api/article");
 
         if (data.success) {
-          const formattedArticles = data.articles.map((article: any) => ({
+          const formattedArticles = data.articles.map((article: { _id: string }) => ({
             id: article._id,
             ...article
           }));

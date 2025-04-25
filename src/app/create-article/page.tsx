@@ -213,7 +213,7 @@ const CreateArticle = () => {
           <FormField
             control={control}
             name="coverImage"
-            render={({ field }) => ( // Destructure field but don't spread it onto the input directly
+            render={({ }) => ( // Destructure field but don't spread it onto the input directly
               <FormItem>
                 <FormLabel>Cover Image</FormLabel>
                 <div

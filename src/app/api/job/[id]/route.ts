@@ -6,15 +6,12 @@ import connectDB from "../../utils/db";
 import { Job } from "../../../lib/models/job";
 import cloudinary from "../../utils/cloudinary";
 
-interface RouteParams {
-  id: string;
-}
 
 const isValidObjectId = (id: string) => mongoose.Types.ObjectId.isValid(id);
 
-export async function PATCH(req: NextRequest, { params }: { params: RouteParams }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
     await connectDB();
-    const jobId = await params.id as string;
+    const jobId = (await params).id as string;
 
     if (!isValidObjectId(jobId)) {
         return NextResponse.json({ message: "Invalid Job ID format" }, { status: 400 });
@@ -142,9 +139,9 @@ export async function PATCH(req: NextRequest, { params }: { params: RouteParams 
 
 
 
-export async function GET(req: NextRequest, { params }: { params: RouteParams }) { // Use RouteParams
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) { // Use RouteParams
     await connectDB();
-    const jobId = await params.id as string; // Use params.id
+    const jobId = (await params).id as string; // Use params.id
 
     // --- ID Validation ---
     if (!isValidObjectId(jobId)) {
@@ -167,9 +164,9 @@ export async function GET(req: NextRequest, { params }: { params: RouteParams })
 }
 
 // DELETE request to remove a job by ID
-export async function DELETE(req: NextRequest, { params }: { params: RouteParams }) { // Use RouteParams
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) { // Use RouteParams
     await connectDB();
-    const jobId = await params.id as string; // Use params.id
+    const jobId = (await params).id as string; // Use params.id
 
      // --- ID Validation ---
     if (!isValidObjectId(jobId)) {

@@ -36,131 +36,142 @@ import { useRouter } from "next/navigation";
 
 // Define the Articles type
 export type Articles = {
-  id?: string;
+  id: string; // Made id required
   title: string;
   author: string;
   date: string;
   tags: string;
   coverImage: string;
   status: "drafts" | "published";
-  content: { type: "image" | "paragraph"; paragraphTitle?: string; paragraphText: string; imageFile: string }[]
+  content: { type: "image" | "paragraph"; paragraphTitle?: string; paragraphText: string; imageFile: string }[];
 };
 
+// Component for the actions cell
+function ActionsCell({ article, onDeleteArticle }: { article: Articles; onDeleteArticle: (id: string) => void }) {
+  const router = useRouter();
+  const [isDeleting, setIsDeleting] = React.useState(false);
+
+  const handleEdit = () => {
+    try {
+      localStorage.setItem("create", JSON.stringify(article));
+      router.push("/create-article");
+    } catch (error) {
+      console.error("Navigation failed:", error);
+      alert("Failed to navigate to edit page.");
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirm("Are you sure you want to delete this article?")) return;
+    setIsDeleting(true);
+    try {
+      await onDeleteArticle(article.id);
+    } catch (error) {
+      console.error("Failed to delete article:", error);
+      alert("Failed to delete article.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
+  const handlePreview = () => {
+    try {
+      localStorage.setItem("view", JSON.stringify(article));
+      router.push("/preview?type=view");
+    } catch (error) {
+      console.error("Navigation failed:", error);
+      alert("Failed to navigate to preview page.");
+    }
+  };
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          className="h-10 w-10 p-0 hover:text-white"
+          aria-label="Open article actions menu"
+          disabled={isDeleting}
+        >
+          <span className="sr-only">Open menu</span>
+          <MoreVertical />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuItem onClick={handleEdit}>Edit Article</DropdownMenuItem>
+        <DropdownMenuItem onClick={handleDelete} disabled={isDeleting}>
+          {isDeleting ? "Deleting..." : "Delete Article"}
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={handlePreview}>Preview Article</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
 
 // Define the columns
 export const columns = (
   onDeleteArticle: (id: string) => void
 ): ColumnDef<Articles>[] => [
-    {
-      accessorKey: "title",
-      header: ({ column }) => (
-        <Button
-          className="hover:bg-gray/80 hover:text-black"
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+  {
+    accessorKey: "title",
+    header: ({ column }) => (
+      <Button
+        className="hover:bg-gray/80 hover:text-black"
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Title
+        <ArrowUpDown />
+      </Button>
+    ),
+    cell: ({ row }) => <div>{row.getValue("title")}</div>,
+  },
+  {
+    accessorKey: "author",
+    header: ({ column }) => (
+      <Button
+        className="hover:bg-gray/80 hover:text-black"
+        variant="ghost"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      >
+        Author
+        <ArrowUpDown />
+      </Button>
+    ),
+    cell: ({ row }) => <div>{row.getValue("author")}</div>,
+  },
+  {
+    accessorKey: "date",
+    header: "Date",
+    cell: ({ row }) => <div>{row.getValue("date")}</div>,
+  },
+  {
+    accessorKey: "status",
+    header: "Status",
+    cell: ({ row }) => {
+      const status = row.getValue("status") as string;
+      return (
+        <div
+          className={`uppercase px-0 py-1 rounded-3xl text-center font-medium ${
+            status === "drafts" ? "bg-black/40 text-white" : "bg-green-200 text-green-500"
+          }`}
         >
-          Title
-          <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => <div>{row.getValue("title")}</div>,
+          {status}
+        </div>
+      );
     },
-    {
-      accessorKey: "author",
-      header: ({ column }) => (
-        <Button
-          className="hover:bg-gray/80 hover:text-black"
-          variant="ghost"
-          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
-        >
-          Author
-          <ArrowUpDown />
-        </Button>
-      ),
-      cell: ({ row }) => <div>{row.getValue("author")}</div>,
+    filterFn: (row, columnId, filterValue) => {
+      if (!filterValue) return true;
+      return row.getValue(columnId) === filterValue;
     },
-    {
-      accessorKey: "date",
-      header: "Date",
-      cell: ({ row }) => <div>{row.getValue("date")}</div>,
-    },
-    {
-      accessorKey: "status",
-      header: "Status",
-      cell: ({ row }) => {
-        const status = row.getValue("status") as string;
-        return (
-          <div
-            className={`uppercase px-0 py-1 rounded-3xl text-center 
-             font-medium ${status === "drafts"
-                ? "bg-black/40 text-white"
-                : "bg-green-200 text-green-500"
-              }`}
-          >
-            {status}
-          </div>
-        );
-      },
-      enableColumnFilter: true,
-    },
-    {
-      accessorKey: "actions",
-      id: "actions",
-      enableHiding: false,
-      cell: ({ row }) => {
-        const article = row.original
-        const router = useRouter();
-
-        const handleEdit = (article: Articles) => {
-          localStorage.setItem("create", JSON.stringify(article));
-          console.log(article);
-
-
-          router.push("/create-article");
-        };
-
-        const handleDelete = async ({ id: articleId, title }: Articles) => {
-
-          if (!confirm("Are you sure you want to delete this article?")) return;
-
-          try {
-            // await axios.delete(`/api/article/${articleId}`);
-
-            await onDeleteArticle(articleId as string );
-
-          } catch (error) {
-            console.error("Failed to delete article:", error);
-            alert("Failed to delete article.");
-          }
-
-        };
-
-        const handlePreview = (article: Articles) => {
-
-          localStorage.setItem("view", JSON.stringify(article));
-
-          router.push("/preview?type=view");
-        };
-
-        return (
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" className="h-10 w-10 p-0 hover:text-white">
-                <span className="sr-only">Open menu</span>
-                <MoreVertical />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => handleEdit(article)}>Edit Article</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleDelete(article)}>Delete Article</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handlePreview(article)}>Preview Article</DropdownMenuItem>
-            </DropdownMenuContent>
-
-          </DropdownMenu>
-        )
-      },
-    },
-  ];
+  },
+  {
+    accessorKey: "actions",
+    id: "actions",
+    enableHiding: false,
+    cell: ({ row }) => <ActionsCell article={row.original} onDeleteArticle={onDeleteArticle} />,
+  },
+];
 
 interface DataTableProps {
   data: Articles[];
@@ -169,16 +180,14 @@ interface DataTableProps {
 
 export default function DataTable({ data, onDeleteArticle }: DataTableProps) {
   const [sorting, setSorting] = React.useState<SortingState>([]);
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    []
-  );
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>([]);
   const [columnVisibility, setColumnVisibility] = React.useState<VisibilityState>({});
-  const [rowSelection, setRowSelection] = React.useState({});
-  const router = useRouter()
+
+  const memoizedColumns = React.useMemo(() => columns(onDeleteArticle), [onDeleteArticle]);
 
   const table = useReactTable({
     data,
-    columns: columns(onDeleteArticle),
+    columns: memoizedColumns,
     onSortingChange: setSorting,
     onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
@@ -186,15 +195,12 @@ export default function DataTable({ data, onDeleteArticle }: DataTableProps) {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
     state: {
       sorting,
       columnFilters,
       columnVisibility,
-      rowSelection,
     },
   });
-
 
   return (
     <div className="w-full">
@@ -202,13 +208,10 @@ export default function DataTable({ data, onDeleteArticle }: DataTableProps) {
         <Input
           placeholder="Filter articles..."
           value={(table.getColumn("title")?.getFilterValue() as string) ?? ""}
-          onChange={(event) =>
-            table.getColumn("title")?.setFilterValue(event.target.value)
-          }
+          onChange={(event) => table.getColumn("title")?.setFilterValue(event.target.value)}
           className="max-w-sm bg-white"
         />
         <div className="flex gap-4">
-          {/* column button  */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button className="hover:bg-gray hover:text-white" variant="outline">
@@ -231,8 +234,6 @@ export default function DataTable({ data, onDeleteArticle }: DataTableProps) {
                 ))}
             </DropdownMenuContent>
           </DropdownMenu>
-
-          {/* Filter Button */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button className="hover:bg-gray hover:text-white" variant="outline">
@@ -262,10 +263,7 @@ export default function DataTable({ data, onDeleteArticle }: DataTableProps) {
                   <TableHead key={header.id}>
                     {header.isPlaceholder
                       ? null
-                      : flexRender(
-                        header.column.columnDef.header,
-                        header.getContext()
-                      )}
+                      : flexRender(header.column.columnDef.header, header.getContext())}
                   </TableHead>
                 ))}
               </TableRow>
@@ -274,7 +272,7 @@ export default function DataTable({ data, onDeleteArticle }: DataTableProps) {
           <TableBody>
             {table.getRowModel().rows?.length ? (
               table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                <TableRow key={row.id}>
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
                       {flexRender(cell.column.columnDef.cell, cell.getContext())}
@@ -293,10 +291,6 @@ export default function DataTable({ data, onDeleteArticle }: DataTableProps) {
         </Table>
       </div>
       <div className="flex items-center justify-end space-x-2 py-4">
-        <div className="flex-1 text-sm text-muted-foreground">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
-        </div>
         <div className="space-x-2">
           <Button
             variant="outline"
