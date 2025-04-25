@@ -1,7 +1,10 @@
 export enum JobAction {
+  VIEW_JOB = "View Job", // Renamed from OPEN_JOB for clarity if it just views details
   ADD_TO_DRAFTS = "Add to Drafts",
-  OPEN_JOB = "Open Job",
   DELETE_JOB = "Delete Job",
+  OPEN_JOB_STATUS = "Open Job", // Action to change status to Open
+  CLOSE_JOB_STATUS = "Close Job", // Action to change status to Closed
+  EDIT_JOB = "Edit Job", // <-- Add this
 }
 
 export enum Status {
@@ -16,8 +19,10 @@ export enum ExperienceLevel {
   GTE_FIVE = ">= 5yrs",
 }
 
-export interface JobDetail {
-  checked: boolean;
+// Represents the core data of a Job, matching the backend model
+export interface JobData {
+  _id?: string;
+  checked?: boolean;
   title: string;
   dept: string;
   location: string;
@@ -25,9 +30,16 @@ export interface JobDetail {
   status: Status;
   job_type: string;
   experience: ExperienceLevel;
-  action: JobAction;
   date: string;
+  image?: string;
+  createdAt?: string;
+  updatedAt?: string;
 }
+
+// Keep JobDetail if it represents a slightly different structure used only in the UI/Redux state,
+// but it's better to align it closely with JobData.
+export type JobDetail = JobData;
+
 
 export type Tag = {
   active: boolean;

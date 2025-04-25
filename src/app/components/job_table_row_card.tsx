@@ -1,111 +1,213 @@
 "use client";
 import React from "react";
 import StatusCard from "./status_card";
-import { JobAction, Status } from "../utils/customTypes";
+import { JobAction, Status, JobData } from "../utils/customTypes";
 import { useDispatch, useSelector } from "react-redux";
-import { handleAction, updateAction } from "../reduxStore/jobActionSlice";
+import {
+  updateSelectedAction,
+  toggleJobChecked,
+  setSelectedJobId,
+} from "../reduxStore/jobActionSlice";
+import { deleteJob, updateJobStatus } from "../reduxStore/thunks/jobThunk";
 import Dropdown from "./dropdown";
-import { RootState } from "../reduxStore/store";
-import { toggleDropdown } from "../reduxStore/dropdownSlice";
+import { RootState, AppDispatch } from "../reduxStore/store";
+import { toggleDropdown } from "../reduxStore/dropdownSlice"; // Ensure this is imported
+import { stripHtml } from "../utils/helpers"; // Assuming you have this helper
+import { useRouter } from "next/navigation";
 
 interface Params {
-  checked: boolean;
-  title: string;
-  dept: string;
-  location: string;
-  desc: string;
-  status: Status;
+  job: JobData;
   index: number;
 }
 
-function JobTableRowCard({
-  title,
-  dept,
-  location,
-  desc,
-  status,
-  index,
-}: Params) {
-  const dispatch = useDispatch();
-  const dropdown = useSelector((state: RootState) => state.dropdown);
-  const handleActionUpdate = (action: JobAction, index: number) => {
-    dispatch(updateAction(action));
-    dispatch(handleAction(index));
+function JobTableRowCard({ job, index }: Params) {
+  const dispatch: AppDispatch = useDispatch();
+  const specificDropdownState = useSelector(
+    (state: RootState) => state.dropdown.dropdowns[index]
+  );
+
+  const router = useRouter();
+
+  const { submitting } = useSelector((state: RootState) => state.jobAction); // Use jobAction key
+
+  const handleCheckboxChange = () => {
+    if (job._id) {
+      dispatch(toggleJobChecked(job._id));
+    }
   };
+
+  // --- Handle Actions using Thunks (parameter type is now just JobAction) ---
+  const handlePerformAction = (action: JobAction) => {
+    if (!job._id) {
+      console.error("Job ID is missing, cannot perform action.");
+      return;
+    }
+
+    switch (action) {
+      case JobAction.VIEW_JOB:
+        dispatch(setSelectedJobId(job._id));
+        dispatch(updateSelectedAction(JobAction.VIEW_JOB));
+        break;
+
+      case JobAction.EDIT_JOB:
+        router.push(`/edit-job/${job._id}`);
+        break;
+
+      case JobAction.DELETE_JOB:
+        if (
+          window.confirm(`Are you sure you want to delete job: "${job.title}"?`)
+        ) {
+          dispatch(deleteJob(job._id));
+        }
+        break;
+
+      case JobAction.ADD_TO_DRAFTS:
+        dispatch(updateJobStatus({ id: job._id, status: Status.DRAFT }));
+        break;
+      // --- Handle new enum members for status changes ---
+      case JobAction.OPEN_JOB_STATUS:
+        dispatch(updateJobStatus({ id: job._id, status: Status.OPEN }));
+        break;
+      case JobAction.CLOSE_JOB_STATUS:
+        dispatch(updateJobStatus({ id: job._id, status: Status.CLOSED }));
+        break;
+      default:
+        // Optional: Exhaustiveness check (if using TypeScript)
+        // const _exhaustiveCheck: never = action;
+        console.warn("Unhandled action:", action);
+    }
+  };
+
+  // --- Define actions for the dropdown using the enum ---
   const actions = [
+    // Always show View Job
     {
-      type: JobAction.ADD_TO_DRAFTS,
-      action: (index: number) =>
-        handleActionUpdate(JobAction.ADD_TO_DRAFTS, index),
+      type: JobAction.VIEW_JOB, // Use enum value as type (which is the display string)
+      action: () => handlePerformAction(JobAction.VIEW_JOB),
     },
+
     {
-      type: JobAction.OPEN_JOB,
-      action: (index: number) => handleActionUpdate(JobAction.OPEN_JOB, index),
+      type: JobAction.EDIT_JOB,
+      action: () => handlePerformAction(JobAction.EDIT_JOB),
     },
+
+    ...(job.status !== Status.DRAFT
+      ? [
+          {
+            type: JobAction.ADD_TO_DRAFTS,
+            action: () => handlePerformAction(JobAction.ADD_TO_DRAFTS),
+          },
+        ]
+      : []),
+    // Conditionally show "Open Job"
+    ...(job.status !== Status.OPEN
+      ? [
+          {
+            type: JobAction.OPEN_JOB_STATUS, // Use enum value
+            action: () => handlePerformAction(JobAction.OPEN_JOB_STATUS),
+          },
+        ]
+      : []),
+    // Conditionally show "Close Job"
+    ...(job.status !== Status.CLOSED
+      ? [
+          {
+            type: JobAction.CLOSE_JOB_STATUS, // Use enum value
+            action: () => handlePerformAction(JobAction.CLOSE_JOB_STATUS),
+          },
+        ]
+      : []),
+    // Always show Delete Job
     {
       type: JobAction.DELETE_JOB,
-      action: (index: number) =>
-        handleActionUpdate(JobAction.DELETE_JOB, index),
+      action: () => handlePerformAction(JobAction.DELETE_JOB),
     },
   ];
+
+  const handleRowClick = () => {
+    if (job._id) {
+      handlePerformAction(JobAction.VIEW_JOB);
+    }
+  };
+
+  const plainTextDesc = stripHtml(job.desc);
+  const truncatedDesc = ((text: string, limit: number) => {
+      return text.length > limit ? text.substring(0, limit) + "..." : text;
+  })(plainTextDesc, 15); // Immediately call with the text and limit (e.g., 20)
+
+
   return (
-    <div>
-      <ul className="flex border-b border-b-gray/30 rounded">
-        <li className="py-1 h-[4rem] flex items-center cursor-pointer text-sm px-2 w-[5%]">
-          <input type="checkbox" className="h-5 w-6 cursor-pointer" />
-        </li>
-        <li className="py-1 h-[4rem] flex items-center text-sm px-2 w-[25%]">
-          {title}
-        </li>
-        <li className="py-1 h-[4rem] font-semibold flex items-center text-sm px-2 w-[15%]">
-          {dept}
-        </li>
-        <li className="py-1 h-[4rem] flex items-center text-sm px-2 w-[20%]">
-          {location}
-        </li>
-        <li className="py-1 h-[4rem] flex items-center text-sm px-2 w-[20%]">
-          {desc}
-        </li>
-        <li className="py-1 h-[4rem] flex items-center text-sm px-2 w-[10%]">
-          <StatusCard type={status} />
-        </li>
-        <li
-          onClick={() => dispatch(toggleDropdown(index))}
-          className="py-1 h-[4rem] flex relative items-center cursor-pointer text-sm px-2 w-[5%]"
+    <ul
+      className={`flex border-b border-b-gray/30 transition-opacity duration-300 ${
+        submitting
+          ? "opacity-60 pointer-events-none"
+          : "hover:bg-gray-100 cursor-pointer"
+      }`}
+      onClick={handleRowClick}
+    >
+      {" "}
+      <li
+        className="py-1 h-[4rem] flex items-center text-sm px-2 w-[5%]"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <input
+          type="checkbox"
+          className="h-5 w-5 cursor-pointer accent-accent"
+          checked={job.checked || false}
+          onChange={handleCheckboxChange}
+        />
+      </li>
+      <li className="py-1 h-[4rem] flex items-center text-sm px-2 w-[25%]">
+        {job.title}
+      </li>
+      <li className="py-1 h-[4rem] font-semibold flex items-center text-sm px-2 w-[15%]">
+        {job.dept}
+      </li>
+      <li className="py-1 h-[4rem] flex items-center text-sm px-2 w-[20%]">
+        {job.location}
+      </li>
+      <li
+        className="py-1 h-[4rem] flex items-center text-sm px-2 w-[20%] overflow-hidden whitespace-nowrap text-ellipsis"
+        title={truncatedDesc}
+      >
+        {truncatedDesc}
+      </li>
+      <li className="py-1 h-[4rem] flex items-center text-sm px-2 w-[10%]">
+        <StatusCard type={job.status} />
+      </li>
+      <li
+        onClick={(e) => {
+          // Prevent opening dropdown if submitting
+          if (!submitting) {
+            e.stopPropagation();
+            dispatch(toggleDropdown(index));
+          }
+        }}
+        // Adjust styling for disabled state if needed
+        className={`py-1 h-[4rem] flex relative items-center justify-center text-sm px-2 w-[5%] ${
+          submitting ? "cursor-not-allowed" : ""
+        }`}
+      >
+        {/* More options icon */}
+        <svg
+          className={`h-5 w-5 ${
+            submitting ? "text-gray-300" : "text-gray-500"
+          }`}
+          fill="currentColor"
+          viewBox="0 0 20 20"
         >
-          <svg
-            width="16"
-            height="16"
-            viewBox="0 0 16 16"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <g clipPath="url(#clip0_801_8200)">
-              <path
-                d="M8.0013 2.66667C8.73768 2.66667 9.33463 2.06971 9.33463 1.33333C9.33463 0.596954 8.73768 0 8.0013 0C7.26492 0 6.66797 0.596954 6.66797 1.33333C6.66797 2.06971 7.26492 2.66667 8.0013 2.66667Z"
-                fill="#374957"
-              />
-              <path
-                d="M8.0013 9.33353C8.73768 9.33353 9.33463 8.73658 9.33463 8.0002C9.33463 7.26382 8.73768 6.66687 8.0013 6.66687C7.26492 6.66687 6.66797 7.26382 6.66797 8.0002C6.66797 8.73658 7.26492 9.33353 8.0013 9.33353Z"
-                fill="#374957"
-              />
-              <path
-                d="M8.0013 15.9998C8.73768 15.9998 9.33463 15.4029 9.33463 14.6665C9.33463 13.9301 8.73768 13.3331 8.0013 13.3331C7.26492 13.3331 6.66797 13.9301 6.66797 14.6665C6.66797 15.4029 7.26492 15.9998 8.0013 15.9998Z"
-                fill="#374957"
-              />
-            </g>
-            <defs>
-              <clipPath id="clip0_801_8200">
-                <rect width="16" height="16" fill="white" />
-              </clipPath>
-            </defs>
-          </svg>
-          {dropdown.dropdowns[index] && dropdown.dropdowns[index].active && (
-            <Dropdown items={actions} index={index} />
-          )}
-        </li>
-      </ul>
-    </div>
+          <path
+            fillRule="evenodd"
+            d="M10 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4zm0 6a2 2 0 110-4 2 2 0 010 4z"
+            clipRule="evenodd"
+          />
+        </svg>
+        {/* --- Check the specific dropdown state's active property --- */}
+        {!submitting && specificDropdownState?.active && (
+          <Dropdown items={actions} index={index} />
+        )}
+      </li>
+    </ul>
   );
 }
 

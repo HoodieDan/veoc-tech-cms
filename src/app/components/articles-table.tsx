@@ -33,7 +33,6 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useRouter } from "next/navigation";
-import axios from "axios";
 
 // Define the Articles type
 export type Articles = {

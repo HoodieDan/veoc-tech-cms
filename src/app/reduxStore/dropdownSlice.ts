@@ -1,18 +1,28 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
-interface DropdownState<T = unknown> {
+interface DropdownItemState {
+  id: number;
   active: boolean;
-  content?: T;
+  content: string | null;
 }
 
-interface StateParams<T = unknown> {
-  dropdowns: Record<number, DropdownState<T>>;
-  dropdownUpdateCount: number;
+interface DropdownState {
+  // Use a Record (object map) for dynamic access by ID (index)
+  dropdowns: Record<number, DropdownItemState>;
 }
 
-const initialState: StateParams = {
+// Initial state with an empty object
+const initialState: DropdownState = {
   dropdowns: {},
-  dropdownUpdateCount: 0,
+};
+
+// Helper to get or create default state for a specific dropdown ID
+const getOrCreateDropdown = (state: DropdownState, id: number): DropdownItemState => {
+  if (!state.dropdowns[id]) {
+    // If it doesn't exist, create it with default values
+    state.dropdowns[id] = { id: id, active: false, content: null };
+  }
+  return state.dropdowns[id];
 };
 
 export const dropdownSlice = createSlice({
@@ -20,46 +30,31 @@ export const dropdownSlice = createSlice({
   initialState,
   reducers: {
     toggleDropdown: (state, action: PayloadAction<number>) => {
-      const id = action.payload;
-      if (!state.dropdowns[id]) {
-        state.dropdowns[id] = { active: true };
-        return;
-      }
+      const targetId = action.payload;
+      const targetDropdown = getOrCreateDropdown(state, targetId); // Get or create
+      const wasActive = targetDropdown.active;
 
-      //reset dropdown
-      Object.keys(state.dropdowns).forEach((key) => {
-        const id = Number(key);
-        state.dropdowns[id].active = false;
+      // Deactivate all others
+      Object.values(state.dropdowns).forEach(dropdown => {
+        if (dropdown.id !== targetId) {
+          dropdown.active = false;
+        }
       });
 
-      //set active
-      state.dropdowns[id].active = !state.dropdowns[id].active;
-      state.dropdownUpdateCount = 0;
+      // Toggle the target
+      targetDropdown.active = !wasActive;
     },
 
-    updateDropdownContent: <T>(
-      state: StateParams<T>,
-      action: PayloadAction<{ id: number; content: T }>
-    ) => {
-      const { id, content } = action.payload;
-      state.dropdowns[id].content = content;
-      state.dropdowns[id].active = false;
+    updateDropdownContent: (state, action: PayloadAction<{ id: number; content: string | null }>) => {
+      const targetId = action.payload.id;
+      const dropdown = getOrCreateDropdown(state, targetId); // Get or create
+      dropdown.content = action.payload.content;
+      // dropdown.active = false; // Optional: close dropdown on selection
     },
 
     resetDropdown: (state) => {
-      const hasActiveDropdown = Object.values(state.dropdowns).some(
-        (dropdown) => dropdown.active
-      );
-      if (!hasActiveDropdown) return;
-
-      state.dropdownUpdateCount += 1;
-      if (state.dropdownUpdateCount % 2 != 0) return;
-
-      Object.keys(state.dropdowns).forEach((key) => {
-        const id = Number(key);
-        if (state.dropdowns[id].active) {
-          state.dropdowns[id].active = false;
-        }
+      Object.values(state.dropdowns).forEach(dropdown => {
+        dropdown.active = false;
       });
     },
   },

@@ -1,99 +1,106 @@
 import React from "react";
 import StatusCard from "./status_card";
-import { Status } from "../utils/customTypes";
-import HighlightCard from "./highlight_card";
+import { JobData } from "../utils/customTypes"; // Import JobData
 import Image from "next/image";
-import JobImage from "../assets/jobimg.png";
-import { useDispatch } from "react-redux";
-import { updateAction } from "../reduxStore/jobActionSlice";
 
-function JobDescriptionCard() {
-  const dispatch = useDispatch();
-  const closeJobDescription = () => {
-    dispatch(updateAction(null));
-  };
+interface JobDescriptionProps {
+    job: JobData;
+    onClose: () => void; // Function to close the card
+}
+
+function JobDescriptionCard({ job, onClose }: JobDescriptionProps) {
+  // Removed dispatch
+
+  // Format date if needed
+  const formattedDate = job.date ? new Date(job.date).toLocaleDateString() : 'N/A';
+  const createdAtDate = job.createdAt ? new Date(job.createdAt).toLocaleString() : 'N/A';
+
   return (
-    <div className="fixed top-0 right-0 h-[100vh] w-[100vw] z-40 bg-foreground/20">
-      <div className="fixed top-0 right-0 overflow-y-auto pb-6 h-[100vh] space-y-8 w-[30vw] bg-background px-4">
-        <div className="flex justify-between items-center border-b border-b-gray/30 py-4">
-          <div className="flex gap-x-3">
-            <h2>Job Description</h2>
-            <StatusCard type={Status.OPEN} />
+    // Overlay
+    <div className="fixed inset-0 z-40 bg-black bg-opacity-40 flex justify-end" onClick={onClose}>
+      {/* Card Content - Stop propagation to prevent closing when clicking inside */}
+      <div
+        className="fixed top-0 right-0 overflow-y-auto pb-6 h-screen space-y-6 w-full max-w-md md:max-w-lg bg-background px-4 shadow-lg" // Responsive width
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex justify-between items-center border-b border-b-gray/30 py-4 sticky top-0 bg-background z-10">
+          <div className="flex gap-x-3 items-center">
+            <h2 className="text-lg font-semibold">Job Description</h2>
+            <StatusCard type={job.status} />
           </div>
-          <svg
-            className="cursor-pointer"
-            onClick={closeJobDescription}
-            width="20"
-            height="20"
-            viewBox="0 0 20 20"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M15.0018 4.99997C14.8455 4.84374 14.6336 4.75598 14.4126 4.75598C14.1917 4.75598 13.9797 4.84374 13.8235 4.99997L10.0018 8.82164L6.18013 4.99997C6.02386 4.84374 5.81194 4.75598 5.59097 4.75598C5.37 4.75598 5.15807 4.84374 5.0018 4.99997C4.84558 5.15624 4.75781 5.36817 4.75781 5.58914C4.75781 5.81011 4.84558 6.02203 5.0018 6.1783L8.82347 9.99997L5.0018 13.8216C4.84558 13.9779 4.75781 14.1898 4.75781 14.4108C4.75781 14.6318 4.84558 14.8437 5.0018 15C5.15807 15.1562 5.37 15.244 5.59097 15.244C5.81194 15.244 6.02386 15.1562 6.18013 15L10.0018 11.1783L13.8235 15C13.9797 15.1562 14.1917 15.244 14.4126 15.244C14.6336 15.244 14.8455 15.1562 15.0018 15C15.158 14.8437 15.2458 14.6318 15.2458 14.4108C15.2458 14.1898 15.158 13.9779 15.0018 13.8216L11.1801 9.99997L15.0018 6.1783C15.158 6.02203 15.2458 5.81011 15.2458 5.58914C15.2458 5.36817 15.158 5.15624 15.0018 4.99997Z"
-              fill="#000706"
-            />
-          </svg>
+          <button onClick={onClose} aria-label="Close job description"> {/* Use button for accessibility */}
+            <svg /* Close Icon */ >...</svg>
+          </button>
         </div>
 
-        <div className="space-y-1">
-          <h2 className="text-xl font-semibold">
-            General Manager @ AXCEL CYBER
-          </h2>
+        {/* Job Title and Date */}
+        <div className="space-y-1 pt-2">
+          <h2 className="text-xl font-semibold">{job.title}</h2>
           <p className="text-sm text-foreground/50">
-            January 15th 2025, 3:30pm
+            Posted: {createdAtDate}
           </p>
         </div>
 
-        <div>
+        {/* Application Tracking (Example - Data needs to come from somewhere) */}
+        {/* <div>
           <title>Application Tracking</title>
           <div className="flex justify-between space-y-4 xl:space-y-0 xl:space-x-6 flex-wrap xl:flex-nowrap">
-            <HighlightCard subtext={"Application"} text={"500"} />
-            <HighlightCard subtext={"Application"} text={"500"} />
-            <HighlightCard subtext={"Application"} text={"500"} />
+            <HighlightCard subtext={"Applications"} text={"N/A"} />
+            <HighlightCard subtext={"Interviews"} text={"N/A"} />
+            <HighlightCard subtext={"Offers"} text={"N/A"} />
           </div>
-        </div>
+        </div> */}
 
+        {/* Description */}
         <div className="space-y-1">
           <h3 className="font-semibold">Description</h3>
-          <p className="text-sm text-foreground/50">
-            Thank you for been our loyal customer, as a token... Thank you for
-            been our loyal customer, as a token... Thank you for been our loyal
-            customer, as a token...Thank you for been our loyal customer, as a
-            token...Thank you for been our loyal customer, as a token...Thank
-            you for been our loyal customer, as a token...Thank you for been our
-            loyal customer, as a token...Thank you for been our loyal customer,
-            as a token...Thank you for been our loyal customer, as a
-            token...Thank you for been our loyal customer, as a token...Thank
-            you for been our loyal customer, as a token...
-          </p>
+          {/* Render HTML content safely if job.desc contains HTML */}
+          <div
+            className="text-sm text-foreground/70 prose max-w-none" // Use prose for basic HTML styling
+            dangerouslySetInnerHTML={{ __html: job.desc || "" }}
+          />
+          {/* Or if it's plain text: */}
+          {/* <p className="text-sm text-foreground/70 whitespace-pre-wrap">{job.desc}</p> */}
         </div>
 
-        <div className="space-y-2">
-          <h3 className="font-semibold">Media</h3>
-          <div className="h-[13rem] rounded-lg relative overflow-clip bg-gray">
-            <Image
-              src={JobImage.src}
-              height={JobImage.height}
-              width={JobImage.width}
-              className="w-full h-full object-cover absolute"
-              alt="Job image"
-            />
+        {/* Media */}
+        {job.image && (
+          <div className="space-y-2">
+            <h3 className="font-semibold">Media</h3>
+            <div className="h-[13rem] rounded-lg relative overflow-clip bg-gray-200"> {/* Added bg color */}
+              <Image
+                src={job.image} // Use image from job data
+                layout="fill"
+                objectFit="cover"
+                className="absolute"
+                alt={`Image for ${job.title}`}
+              />
+            </div>
           </div>
-        </div>
+        )}
 
-        <div className="flex flex-wrap justify-between">
-          <div className="w-[10rem] py-2">
-            <h3 className="font-semibold">Start date</h3>
-            <p className="text-foreground/50">12/10/2023</p>
+        {/* Details Grid */}
+        <div className="grid grid-cols-2 gap-4 border-t border-gray-200 pt-4">
+          <div>
+            <h3 className="font-semibold text-sm">Start date</h3>
+            <p className="text-foreground/70 text-sm">{formattedDate}</p>
           </div>
-          <div className="w-[10rem] py-2">
-            <h3 className="font-semibold">Location</h3>
-            <p className="text-foreground/50">Lagos</p>
+          <div>
+            <h3 className="font-semibold text-sm">Location</h3>
+            <p className="text-foreground/70 text-sm">{job.location}</p>
           </div>
-          <div className="w-[10rem] py-2">
-            <h3 className="font-semibold">Department</h3>
-            <p className="text-foreground/50">Admin</p>
+          <div>
+            <h3 className="font-semibold text-sm">Department</h3>
+            <p className="text-foreground/70 text-sm">{job.dept}</p>
+          </div>
+           <div>
+            <h3 className="font-semibold text-sm">Experience</h3>
+            <p className="text-foreground/70 text-sm">{job.experience}</p>
+          </div>
+           <div>
+            <h3 className="font-semibold text-sm">Job Type</h3>
+            <p className="text-foreground/70 text-sm">{job.job_type || 'N/A'}</p>
           </div>
         </div>
       </div>

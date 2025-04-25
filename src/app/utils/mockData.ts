@@ -1,6 +1,5 @@
 import {
   ExperienceLevel,
-  JobAction,
   JobDetail,
   Status,
   Tag,
@@ -8,37 +7,41 @@ import {
 
 export const mockJobs: JobDetail[] = [
   {
+    // _id: "mock1", // Add mock IDs if needed
     checked: false,
     title: "Software Engineer",
     dept: "Engineering",
     location: "San Francisco, CA",
     desc: "Develop and maintain web applications.",
     status: Status.OPEN,
-    action: JobAction.OPEN_JOB,
+    // action: JobAction.VIEW_JOB, // REMOVE THIS
     job_type: "",
     experience: ExperienceLevel.GTE_FIVE,
     date: "12/22/2024",
+    image: "https://via.placeholder.com/150", // Add mock image if needed
   },
   {
+    // _id: "mock2",
     checked: true,
     title: "Product Manager",
     dept: "Product",
     location: "Remote",
     desc: "Lead product development and strategy.",
     status: Status.DRAFT,
-    action: JobAction.ADD_TO_DRAFTS,
+    // action: JobAction.ADD_TO_DRAFTS, // REMOVE THIS
     job_type: "",
     experience: ExperienceLevel.ZERO,
     date: "02/12/2025",
   },
   {
+    // _id: "mock3",
     checked: false,
     title: "UX Designer",
     dept: "Design",
     location: "New York, NY",
     desc: "Design user-friendly experiences and interfaces.",
     status: Status.CLOSED,
-    action: JobAction.DELETE_JOB,
+    // action: JobAction.DELETE_JOB, // REMOVE THIS
     job_type: "",
     experience: ExperienceLevel.ZERO,
     date: "02/22/2025",
