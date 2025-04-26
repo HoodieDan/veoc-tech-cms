@@ -66,13 +66,27 @@ export async function POST(req: NextRequest) {
 
 
 
-export async function GET() {
+export async function GET(req: NextRequest) {
     try {
-        await connectDB(); // Ensure DB connection
-        const jobs = await Job.find(); // Fetch all jobs
+        await connectDB();
 
-        return NextResponse.json(jobs, { status: 200 });
+        // Get status from query parameters
+        const { searchParams } = new URL(req.url);
+        const status = searchParams.get("status");
+
+        // Build the query object
+        const query: { status?: string } = {};
+        if (status) {
+            query.status = status;
+        }
+
+        // Fetch jobs based on the query
+        // You might want to add sorting, e.g., by date or title
+        const jobs = await Job.find(query).sort({ createdAt: -1 }); // Example sorting
+
+        return NextResponse.json({ success: true, jobs }, { status: 200 });
     } catch (error) {
-        return NextResponse.json({ message: "Error fetching jobs", error }, { status: 500 });
+        console.error("GET /api/job Error:", error);
+        return NextResponse.json({ success: false, error: (error as Error).message || "Unknown server error" }, { status: 500 });
     }
 }

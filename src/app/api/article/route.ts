@@ -96,11 +96,19 @@ export async function POST(req: NextRequest) {
     }
 }
 
-export async function GET() {
+export async function GET(req: NextRequest) {
     try {
         await connectDB();
 
-        const articles = await Article.find().sort({ updatedAt: -1 }); // Fetch all articles
+        const { searchParams } = new URL(req.url);
+        const status = searchParams.get("status");
+
+        const query: { status?: string } = {};
+        if (status) {
+            query.status = status;
+        }
+
+        const articles = await Article.find(query).sort({ updatedAt: -1 });
 
         return NextResponse.json({ success: true, articles }, { status: 200 });
     } catch (error) {
