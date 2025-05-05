@@ -9,8 +9,7 @@ export const fetchJobs = createAsyncThunk(
     try {
       const response = await axios.get("/api/job");
       console.log("Fetched Jobs:", response.data);
-      // Ensure status is mapped correctly if needed, though backend seems to use strings already
-      return response.data as JobData[];
+      return response.data.jobs as JobData[];
     } catch (err) {
       const error = err as AxiosError<{ message: string }>;
       console.error("Fetch Jobs Error:", error.response?.data);
