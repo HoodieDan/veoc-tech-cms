@@ -8,6 +8,7 @@ const JobSchema = new mongoose.Schema({
     desc: { type: String, required: true },
     status: { type: String, required: true },
     job_type: { type: String, default: "" },
+    submission_link: { type: String, default: "" },
     experience: { type: String, required: true },
     date: { type: String, required: true },
     image: { type: String, default: "" },

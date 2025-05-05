@@ -29,9 +29,10 @@ export interface JobData {
   desc: string;
   status: Status;
   job_type: string;
+  submission_link: string;
   experience: ExperienceLevel;
   date: string;
-  image?: string;
+  image?: string; 
   createdAt?: string;
   updatedAt?: string;
 }

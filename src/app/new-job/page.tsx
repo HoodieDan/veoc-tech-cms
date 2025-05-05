@@ -2,7 +2,11 @@
 import React, { useState, ChangeEvent, useEffect } from "react";
 import Dropdown from "../components/dropdown";
 import { useDispatch, useSelector } from "react-redux";
-import { resetDropdown, toggleDropdown, updateDropdownContent } from "../reduxStore/dropdownSlice";
+import {
+  resetDropdown,
+  toggleDropdown,
+  updateDropdownContent,
+} from "../reduxStore/dropdownSlice";
 import { RootState } from "../reduxStore/store";
 import { ExperienceLevel, JobData, Status } from "../utils/customTypes";
 import { createJob } from "../reduxStore/thunks/jobThunk";
@@ -18,7 +22,9 @@ function Page() {
   const router = useRouter();
   const dropdown = useSelector((state: RootState) => state.dropdown);
   // Corrected selector to use 'jobAction' based on previous error
-  const { submitting, error } = useSelector((state: RootState) => state.jobAction);
+  const { submitting, error } = useSelector(
+    (state: RootState) => state.jobAction
+  );
 
   const [newJob, setNewJob] = useState<Partial<JobData>>({
     status: Status.DRAFT, // Default status
@@ -73,7 +79,6 @@ function Page() {
     };
   }, [imagePreview]);
 
-
   // Dropdown update handlers
   const handleLocationUpdate = (location: string) => {
     handleInputChange("location", location);
@@ -105,21 +110,41 @@ function Page() {
   ];
 
   const experiencesLevelDropdown = [
-    { type: ExperienceLevel.ZERO, action: () => handleExpLvlUpdate(ExperienceLevel.ZERO) },
-    { type: ExperienceLevel.GTE_ONE, action: () => handleExpLvlUpdate(ExperienceLevel.GTE_ONE) },
-    { type: ExperienceLevel.GTE_FIVE, action: () => handleExpLvlUpdate(ExperienceLevel.GTE_FIVE) },
+    {
+      type: ExperienceLevel.ZERO,
+      action: () => handleExpLvlUpdate(ExperienceLevel.ZERO),
+    },
+    {
+      type: ExperienceLevel.GTE_ONE,
+      action: () => handleExpLvlUpdate(ExperienceLevel.GTE_ONE),
+    },
+    {
+      type: ExperienceLevel.GTE_FIVE,
+      action: () => handleExpLvlUpdate(ExperienceLevel.GTE_FIVE),
+    },
   ];
 
   // Form submission handler
   const handleSaveJob = async () => {
     // Basic Validation
-    const requiredFields: (keyof JobData)[] = ['title', 'dept', 'location', 'experience', 'date', 'desc'];
-    const missingFields = requiredFields.filter(field => !newJob[field]);
+    const requiredFields: (keyof JobData)[] = [
+      "title",
+      "dept",
+      "location",
+      "experience",
+      "date",
+      "desc",
+    ];
+    const missingFields = requiredFields.filter((field) => !newJob[field]);
 
     if (missingFields.length > 0) {
-        // Consider using a toast library for better UX
-        alert(`Please fill in the following required fields: ${missingFields.join(', ')}`);
-        return;
+      // Consider using a toast library for better UX
+      alert(
+        `Please fill in the following required fields: ${missingFields.join(
+          ", "
+        )}`
+      );
+      return;
     }
 
     // Create FormData
@@ -158,7 +183,10 @@ function Page() {
     >
       {/* Error Display Area */}
       {error && (
-        <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+        <div
+          className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4"
+          role="alert"
+        >
           <strong className="font-bold">Error: </strong>
           <span className="block sm:inline">{error}</span>
           <button
@@ -167,7 +195,15 @@ function Page() {
             aria-label="Close error"
           >
             {/* Close Icon SVG */}
-            <svg className="fill-current h-6 w-6 text-red-500" role="button" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><title>Close</title><path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z"/></svg>
+            <svg
+              className="fill-current h-6 w-6 text-red-500"
+              role="button"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 20 20"
+            >
+              <title>Close</title>
+              <path d="M14.348 14.849a1.2 1.2 0 0 1-1.697 0L10 11.819l-2.651 3.029a1.2 1.2 0 1 1-1.697-1.697l2.758-3.15-2.759-3.152a1.2 1.2 0 1 1 1.697-1.697L10 8.183l2.651-3.031a1.2 1.2 0 1 1 1.697 1.697l-2.758 3.152 2.758 3.15a1.2 1.2 0 0 1 0 1.698z" />
+            </svg>
           </button>
         </div>
       )}
@@ -183,7 +219,9 @@ function Page() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Title */}
           <div className="space-y-2 text-sm">
-            <label htmlFor="title">Title <span className="text-red-500">*</span></label>
+            <label htmlFor="title">
+              Title <span className="text-red-500">*</span>
+            </label>
             <input
               id="title"
               name="title"
@@ -208,19 +246,52 @@ function Page() {
               onChange={(e) => handleInputChange("job_type", e.target.value)}
             />
           </div>
+          {/* Add Submission Link Field Here */}
+          <div className="space-y-2 text-sm">
+            <label htmlFor="submission_link">Submission Link</label>{" "}
+            {/* Add * if required */}
+            <input
+              id="submission_link"
+              name="submission_link"
+              type="url" // Use type="url" for better mobile keyboards and basic validation
+              className="border border-gray/40 p-2 px-3 flex outline-none gap-4 h-[2.5rem] w-full items-center rounded text-sm"
+              placeholder="Enter submission URL"
+              value={newJob.submission_link || ""}
+              onChange={(e) =>
+                handleInputChange("submission_link", e.target.value)
+              }
+              // Add required if submission_link is required
+              // required={true}
+            />
+          </div>
           {/* Location Dropdown */}
           <div className="space-y-2 text-sm">
-            <label htmlFor="location-dropdown">Location <span className="text-red-500">*</span></label>
+            <label htmlFor="location-dropdown">
+              Location <span className="text-red-500">*</span>
+            </label>
             <div
               id="location-dropdown"
-              onClick={(e) => { e.stopPropagation(); dispatch(toggleDropdown(0)); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                dispatch(toggleDropdown(0));
+              }}
               className="border border-gray/40 cursor-pointer relative p-2 px-3 flex outline-none gap-4 h-[2.5rem] w-full items-center justify-between rounded text-sm"
               role="button" // Added role
               aria-haspopup="listbox" // Added aria attribute
             >
               <p>{newJob.location || "Select location"}</p>
               {/* Arrow Icon SVG */}
-              <svg className="h-5 w-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+              <svg
+                className="h-5 w-5 text-gray-600"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
               {dropdown.dropdowns[0]?.active && (
                 <Dropdown items={locations} index={0} />
               )}
@@ -228,7 +299,9 @@ function Page() {
           </div>
           {/* Department */}
           <div className="space-y-2 text-sm">
-            <label htmlFor="dept">Department <span className="text-red-500">*</span></label>
+            <label htmlFor="dept">
+              Department <span className="text-red-500">*</span>
+            </label>
             <input
               id="dept"
               name="dept"
@@ -242,17 +315,32 @@ function Page() {
           </div>
           {/* Experience Level Dropdown */}
           <div className="space-y-2 text-sm">
-            <label htmlFor="exp-level-dropdown">Experience Level <span className="text-red-500">*</span></label>
+            <label htmlFor="exp-level-dropdown">
+              Experience Level <span className="text-red-500">*</span>
+            </label>
             <div
               id="exp-level-dropdown"
-              onClick={(e) => { e.stopPropagation(); dispatch(toggleDropdown(1)); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                dispatch(toggleDropdown(1));
+              }}
               className="border border-gray/40 cursor-pointer relative p-2 px-3 flex outline-none gap-4 h-[2.5rem] w-full items-center justify-between rounded text-sm"
               role="button"
               aria-haspopup="listbox"
             >
               <p>{newJob.experience || "Select experience level"}</p>
               {/* Arrow Icon SVG */}
-              <svg className="h-5 w-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clipRule="evenodd" /></svg>
+              <svg
+                className="h-5 w-5 text-gray-600"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"
+                  clipRule="evenodd"
+                />
+              </svg>
               {dropdown.dropdowns[1]?.active && (
                 <Dropdown items={experiencesLevelDropdown} index={1} />
               )}
@@ -260,7 +348,9 @@ function Page() {
           </div>
           {/* Start Date */}
           <div className="space-y-2 text-sm">
-            <label htmlFor="start-date">Start Date <span className="text-red-500">*</span></label>
+            <label htmlFor="start-date">
+              Start Date <span className="text-red-500">*</span>
+            </label>
             <input
               id="start-date"
               name="start-date"
@@ -275,7 +365,9 @@ function Page() {
 
         {/* Job Description Editor */}
         <div className="space-y-2 text-sm">
-          <label htmlFor="desc">Job Description <span className="text-red-500">*</span></label>
+          <label htmlFor="desc">
+            Job Description <span className="text-red-500">*</span>
+          </label>
           <Editor
             value={newJob.desc || ""}
             onChange={handleDescriptionChange}
@@ -317,7 +409,19 @@ function Page() {
             {!imagePreview && (
               <span className="text-gray-500 flex flex-col justify-center items-center text-center p-4">
                 {/* Upload Icon SVG */}
-                <svg className="h-10 w-10 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
+                <svg
+                  className="h-10 w-10 text-gray-400"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1"
+                    d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                  />
+                </svg>
                 <p className="text-foreground/40 mt-2 text-sm">
                   Drag and drop your image here or
                 </p>
@@ -334,15 +438,18 @@ function Page() {
           <button
             onClick={handleSaveJob}
             disabled={submitting} // Disable button while submitting
-            className={`px-8 py-2 rounded-lg flex justify-center items-center min-w-[100px] bg-accent text-background gap-x-2 ${ // Added min-width
-              submitting ? "opacity-50 cursor-not-allowed" : "hover:bg-accent-dark transition-colors"
+            className={`px-8 py-2 rounded-lg flex justify-center items-center min-w-[100px] bg-accent text-background gap-x-2 ${
+              // Added min-width
+              submitting
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:bg-accent-dark transition-colors"
             }`}
           >
             {submitting ? (
-                // Simple spinner
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
+              // Simple spinner
+              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
             ) : (
-                "Save Job"
+              "Save Job"
             )}
           </button>
         </div>

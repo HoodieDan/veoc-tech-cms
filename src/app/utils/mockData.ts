@@ -16,6 +16,7 @@ export const mockJobs: JobDetail[] = [
     status: Status.OPEN,
     // action: JobAction.VIEW_JOB, // REMOVE THIS
     job_type: "",
+    submission_link: "https://example.com/apply",
     experience: ExperienceLevel.GTE_FIVE,
     date: "12/22/2024",
     image: "https://via.placeholder.com/150", // Add mock image if needed
@@ -30,6 +31,8 @@ export const mockJobs: JobDetail[] = [
     status: Status.DRAFT,
     // action: JobAction.ADD_TO_DRAFTS, // REMOVE THIS
     job_type: "",
+    submission_link: "https://example.com/apply",
+
     experience: ExperienceLevel.ZERO,
     date: "02/12/2025",
   },
@@ -43,6 +46,8 @@ export const mockJobs: JobDetail[] = [
     status: Status.CLOSED,
     // action: JobAction.DELETE_JOB, // REMOVE THIS
     job_type: "",
+    submission_link: "https://example.com/apply",
+
     experience: ExperienceLevel.ZERO,
     date: "02/22/2025",
   },
