@@ -57,7 +57,6 @@ function EditJobPage() {
   // --- State to track if user wants to remove the image ---
   const [imageRemoved, setImageRemoved] = useState(false);
 
-  // --- Define Dropdown Data (COPY FROM new-job/page.tsx) ---
   const locations = [
     { type: "NGN", action: () => handleLocationUpdate("NGN") },
     { type: "USA", action: () => handleLocationUpdate("USA") },
