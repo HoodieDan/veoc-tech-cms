@@ -303,36 +303,36 @@ const CreateArticle = () => {
 
               {/* Content Fields */}
               <div className="flex-1 space-y-4"> {/* Added space-y */}
-              {field.type === "paragraph" && (
-                <div className="space-y-2 flex-1">
-                  <FormField
-                    control={control}
-                    name={`content.${index}.paragraphTitle`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Paragraph Title</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Enter paragraph title" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={control}
-                    name={`content.${index}.paragraphText`}
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Paragraph Text</FormLabel>
-                        <FormControl>
-                          <Textarea placeholder="Enter paragraph text" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              )}
+                {field.type === "paragraph" && (
+                  <div className="space-y-2 flex-1">
+                    <FormField
+                      control={control}
+                      name={`content.${index}.paragraphTitle`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Paragraph Title</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Enter paragraph title" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={control}
+                      name={`content.${index}.paragraphText`}
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Paragraph Text</FormLabel>
+                          <FormControl>
+                            <Textarea placeholder="Enter paragraph text" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                )}
 
 
                 {field.type === "image" && (
@@ -401,7 +401,30 @@ const CreateArticle = () => {
                 ? "Saving..."
                 : savedDraft.id ? "Update Draft" : "Save as Draft"}
             </Button>
-            {/* Optional: Add a "Publish" button here later */}
+            <Button
+              variant="destructive"
+              type="button"
+              onClick={() => {
+                localStorage.removeItem("create");
+                reset({
+                  title: "",
+                  author: "",
+                  tags: "",
+                  coverImage: "",
+                  content: [],
+                });
+                setSavedDraft({
+                  title: "",
+                  author: "",
+                  tags: "",
+                  coverImage: "",
+                  content: [],
+                });
+              }}
+            >
+              Clear
+            </Button>
+
           </div>
         </form>
       </Form>
