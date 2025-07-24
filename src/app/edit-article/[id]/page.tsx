@@ -1,7 +1,8 @@
+// pages/edit/[id].tsx or app/edit/[id]/page.tsx
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
 import { useParams } from "next/navigation";
-import CreateArticle from "../../create-article/page";
+import CreateArticle from "../../components/CreateArticle"; // Updated import path
 import { globalDraft, DraftData } from "@/lib/globalDraft";
 
 const EditArticle = () => {
@@ -54,7 +55,17 @@ const EditArticle = () => {
   if (!article) return <p>Article not found.</p>;
   console.log("Rendering CreateArticle with article:", article);
 
-  return <CreateArticle mode="edit" article={article} />;
+ return (
+  <Suspense fallback={<p>Loading article...</p>}>
+    {loading ? (
+      <p>Loading article...</p>
+    ) : !article ? (
+      <p>Article not found.</p>
+    ) : (
+      <CreateArticle mode="edit" article={article} />
+    )}
+  </Suspense>
+);
 };
 
 export default EditArticle;

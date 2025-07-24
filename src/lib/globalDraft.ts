@@ -1,7 +1,6 @@
-// lib/globalDraft.ts
 import { z } from "zod";
 
-// Define the form schema
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const formSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
   author: z.string().min(2, { message: "Co-Owners must be at least 2 characters." }),
