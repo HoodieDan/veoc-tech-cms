@@ -1,4 +1,4 @@
-"use client"
+"use client";
 import React, { useEffect, useState } from 'react';
 import ArticlesTable, { Articles } from '../components/articles-table';
 import { Button } from '@/components/ui/button';
@@ -7,12 +7,12 @@ import { Plus } from 'lucide-react';
 import HighlightCard from '../components/highlight_card';
 import axios from 'axios';
 import { useRouter } from 'next/navigation';
+import { globalDraft, DraftData } from '@/lib/globalDraft';
 
 const ArticlesPage: React.FC = () => {
-
   const [articles, setArticles] = useState<Articles[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const router = useRouter()
+  const router = useRouter();
 
   useEffect(() => {
     const fetchArticles = async () => {
@@ -29,9 +29,8 @@ const ArticlesPage: React.FC = () => {
         }
       } catch (error) {
         setLoading(false);
-
         console.error("Error fetching articles:", error);
-        alert(error)
+        alert(error instanceof Error ? error.message : "Failed to fetch articles");
       } finally {
         setLoading(false);
       }
@@ -40,12 +39,20 @@ const ArticlesPage: React.FC = () => {
     fetchArticles();
   }, []);
 
-
   const stats = [
     { id: 1, subtext: "Open Job Listings", text: "5000" },
     { id: 2, subtext: "Closed Job Listings", text: "2500" },
     { id: 3, subtext: "Drafts", text: "1500" },
-  ]
+  ];
+
+  // Define initial draft for resetting globalDraft
+  const initialDraft: DraftData = {
+    title: "",
+    author: "",
+    tags: "",
+    coverImage: "",
+    content: [],
+  };
 
   return (
     <div className='p-4'>
@@ -67,20 +74,27 @@ const ArticlesPage: React.FC = () => {
         <h3 className='font-bold text-3xl'>Articles</h3>
 
         <Link href="/create-article">
-          <Button className="bg-accent hover:bg-accent/90 px-6 py-3" onClick={() => {
-            localStorage.removeItem("create")
-            localStorage.removeItem("view")
-
-            router.push("/create-article")
-          }}> <Plus /> New Article</Button>
+          <Button
+            className="bg-accent hover:bg-accent/90 px-6 py-3"
+            onClick={() => {
+              globalDraft.data = initialDraft; // Reset global draft
+              router.push("/create-article");
+            }}
+          >
+            <Plus /> New Article
+          </Button>
         </Link>
       </div>
-      {loading ? (<div className="flex justify-center items-center h-32">
-        <div className="animate-spin rounded-full h-12 w-12 border-[5px] border-transparent border-t-accent border-l-accent"></div>
-      </div>) : (<ArticlesTable data={articles} onDeleteArticle={(id: string) => setArticles((prev) => prev.filter(a => a.id !== id))} />)}
-
-
-
+      {loading ? (
+        <div className="flex justify-center items-center h-32">
+          <div className="animate-spin rounded-full h-12 w-12 border-[5px] border-transparent border-t-accent border-l-accent"></div>
+        </div>
+      ) : (
+        <ArticlesTable
+          data={articles}
+          onDeleteArticle={(id: string) => setArticles((prev) => prev.filter(a => a.id !== id))}
+        />
+      )}
     </div>
   );
 };

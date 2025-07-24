@@ -1,5 +1,6 @@
 "use client";
 import { z } from "zod";
+import { useSearchParams } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm, useFieldArray } from "react-hook-form";
@@ -11,8 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { GripVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { globalDraft, DraftData } from "@/lib/globalDraft";
 
-// --- 1. Update Schema ---
 const formSchema = z.object({
   title: z.string().min(2, { message: "Title must be at least 2 characters." }),
   author: z.string().min(2, { message: "Co-Owners must be at least 2 characters." }),
@@ -22,8 +23,7 @@ const formSchema = z.object({
     .refine((value) => value.split(",").every((tag) => tag.trim().length > 0), {
       message: "Each tag must be non-empty and separated by commas.",
     }),
-  // Add coverImage field - assuming it will store a URL or data URL string
-  coverImage: z.string().min(1, { message: "Cover image is required." }), // Or use .optional() if it's not required
+  coverImage: z.string().min(1, { message: "Cover image is required." }),
   content: z.array(
     z.discriminatedUnion("type", [
       z.object({
@@ -33,104 +33,128 @@ const formSchema = z.object({
       }),
       z.object({
         type: z.literal("image"),
-        // Consider if this should store the actual File object initially,
-        // then upload and store the URL before submitting to the API.
-        // For simplicity now, keeping as string (assuming data URL or final URL).
         imageFile: z.string().min(1, { message: "Image file URL is required." }),
       }),
     ])
   ),
 });
 
-// --- Define the type for the draft state ---
-type DraftData = z.infer<typeof formSchema> & { id?: string }; // Add optional id
+type Props = {
+  mode?: "create" | "edit";
+  article?: DraftData;
+};
 
-const CreateArticle = () => {
+const CreateArticle: React.FC<Props> = ({ mode = "create", article }) => {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
+  const searchParams = useSearchParams();
   const [submitting, setSubmitting] = useState(false);
+  const [savedDraft, setSavedDraft] = useState<DraftData>(globalDraft.data);
 
-  // --- 5. Update savedDraft state type and initial value ---
-  const [savedDraft, setSavedDraft] = useState<DraftData>({
+  // --- Define initial draft for fallback ---
+  const initialDraft: DraftData = {
     title: "",
     author: "",
     tags: "",
-    coverImage: "", // Add coverImage here
+    coverImage: "",
     content: [],
-  });
+  };
+
+  const defaultValues: DraftData = (() => {
+    if (mode === "edit" && article) {
+      console.log("Edit mode: Using article prop", article);
+      const draft = {
+        title: article.title || "",
+        author: article.author || "",
+        tags: article.tags || "",
+        coverImage: article.coverImage || "",
+        content: Array.isArray(article.content) ? article.content : [],
+        id: article.id,
+      };
+      globalDraft.data = draft;
+      globalDraft.fromPreview = false; // Reset flag
+      console.log("Edit mode: globalDraft.data set to", globalDraft.data);
+      return draft;
+    } else {
+      console.log("Create mode");
+      const isFromPreview = searchParams.get("from") === "preview" || globalDraft.fromPreview;
+      console.log("Query param 'from':", searchParams.get("from"), "globalDraft.fromPreview:", globalDraft.fromPreview, "isFromPreview:", isFromPreview);
+      if (!isFromPreview) {
+        globalDraft.data = initialDraft;
+        globalDraft.fromPreview = false; // Reset flag
+      }
+      console.log("Returning globalDraft.data:", globalDraft.data);
+      return globalDraft.data;
+    }
+  })();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
-    // --- 2. Update Default Values ---
-    defaultValues: {
-      title: "",
-      author: "",
-      tags: "",
-      coverImage: "", // Add coverImage here
-      content: [],
-    },
+    defaultValues,
   });
 
-  const { control, handleSubmit, reset, setValue, watch } = form; // Add setValue and watch
+  const { control, handleSubmit, reset, setValue, watch, formState: { isDirty } } = form;
   const { fields, append, remove, insert } = useFieldArray({
     control,
     name: "content",
   });
 
+  // Watch form values to sync with globalDraft.data in real-time
+  const formValues = watch();
+
+  // Sync globalDraft.data with form changes in edit mode
+  useEffect(() => {
+    if (mode === "edit") {
+      console.log("Syncing globalDraft.data with form values:", formValues);
+      globalDraft.data = { ...formValues, id: article?.id }; // Preserve id in edit mode
+    }
+  }, [formValues, mode, article?.id]);
+
   // Watch the coverImage field to display the preview
   const coverImageValue = watch("coverImage");
 
+  // --- Add beforeunload event listener for unsaved changes ---
   useEffect(() => {
-    const draft = localStorage.getItem("create");
-
-    if (draft) {
-      try {
-        const parsedDraft = JSON.parse(draft);
-        // Ensure the parsed draft conforms to the expected structure
-        const validatedDraft: DraftData = {
-          title: parsedDraft.title || "",
-          author: parsedDraft.author || "",
-          tags: parsedDraft.tags || "",
-          coverImage: parsedDraft.coverImage || "", // Load coverImage
-          content: Array.isArray(parsedDraft.content) ? parsedDraft.content : [],
-          id: parsedDraft.id, // Load id if present
-        };
-        reset(validatedDraft);
-        setSavedDraft(validatedDraft);
-      } catch (error) {
-        console.error("Failed to parse draft from local storage:", error);
-        localStorage.removeItem("create"); // Clear invalid draft
+    const handleBeforeUnload = (event: BeforeUnloadEvent) => {
+      if (isDirty) {
+        event.preventDefault();
+        event.returnValue = "Changes may be lost. Are you sure you want to refresh?";
       }
-    }
-    setLoading(false);
-  }, [reset]);
+    };
 
-  // --- 5. Update Local Storage Logic ---
-  const updateLocalStorage = (data: DraftData) => {
-    localStorage.setItem("create", JSON.stringify(data));
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [isDirty]);
+
+  // --- Update globalDraft logic ---
+  const updateGlobalDraft = (data: DraftData) => {
+    globalDraft.data = { ...data };
+    setSavedDraft(globalDraft.data);
   };
 
   const onPreview = (values: z.infer<typeof formSchema>) => {
-    // Merge current form values with existing draft data (like ID)
-    const updatedDraft: DraftData = { ...savedDraft, ...values };
-    setSavedDraft(updatedDraft);
-    updateLocalStorage(updatedDraft);
-    router.push("/preview?type=create");
+    try {
+      console.log("Form values for preview:", values);
+      globalDraft.data = { ...values, id: mode === "edit" ? article?.id : undefined }; // Preserve id in edit mode
+      globalDraft.fromPreview = true;
+      console.log("globalDraft.data set to:", globalDraft.data);
+      console.log("globalDraft.fromPreview set to:", globalDraft.fromPreview);
+      router.push("/preview?type=create");
+    } catch (error) {
+      console.error("Navigation failed:", error);
+      alert("Failed to navigate to preview page.");
+    }
   };
 
   const onSaveAsDrafts = async (values: z.infer<typeof formSchema>) => {
-    // Merge current form values with existing draft data (like ID)
-    const updatedDraft: DraftData = { ...savedDraft, ...values };
+    const updatedDraft: DraftData = { ...savedDraft, ...values, id: mode === "edit" ? article?.id : savedDraft.id };
     console.log("Saving draft:", updatedDraft);
 
     setSubmitting(true);
     try {
-      const url = updatedDraft.id
-        ? `/api/article/${updatedDraft.id}`
-        : "/api/article";
+      const url = updatedDraft.id ? `/api/article/${updatedDraft.id}` : "/api/article";
       const method = updatedDraft.id ? "patch" : "post";
-
-      // --- 6. Ensure coverImage is included in the payload ---
       const payload = { ...updatedDraft, status: "drafts" };
 
       const { data } = await axios({
@@ -141,16 +165,13 @@ const CreateArticle = () => {
       });
 
       const article = data.article;
-      // Assuming API returns _id, map it to id for consistency
       const formattedArticle: DraftData = { ...article, id: article._id || updatedDraft.id };
       console.log("Saved article data:", formattedArticle);
 
-      setSavedDraft(formattedArticle); // Update state with potentially new ID
-      updateLocalStorage(formattedArticle); // Save updated draft with ID
-
+      updateGlobalDraft(formattedArticle);
+      globalDraft.fromPreview = false; // Reset flag
     } catch (error) {
       console.error("Failed to save draft:", error);
-      // Consider showing a user-friendly error message (e.g., using a toast notification library)
       alert(error instanceof Error ? error.message : "Failed to save draft");
     } finally {
       setSubmitting(false);
@@ -160,18 +181,15 @@ const CreateArticle = () => {
   const handleCoverImageUpload = (file: File) => {
     const reader = new FileReader();
     reader.onload = () => {
-      // Set the form value with the data URL
       setValue("coverImage", reader.result as string, { shouldValidate: true, shouldDirty: true });
     };
     reader.onerror = (error) => {
       console.error("Error reading file:", error);
-      // Handle error (e.g., show message to user)
       form.setError("coverImage", { type: "manual", message: "Failed to read image file." });
     };
     reader.readAsDataURL(file);
   };
 
-  // Handler for content images (unchanged, but ensure it uses setValue correctly)
   const handleContentImageUpload = (file: File, index: number) => {
     const reader = new FileReader();
     reader.onload = () => {
@@ -184,15 +202,9 @@ const CreateArticle = () => {
     reader.readAsDataURL(file);
   };
 
-  if (loading) {
-    // Optional: Add a loading indicator
-    return <div>Loading editor...</div>;
-  }
-
   return (
-    <div className="mx-auto p-6 max-w-4xl"> {/* Added max-width for better layout */}
+    <div className="mx-auto p-6 max-w-4xl">
       <Form {...form}>
-        {/* Use onSaveAsDrafts for the form's onSubmit, handle preview separately */}
         <form onSubmit={handleSubmit(onSaveAsDrafts)} className="space-y-6">
           {/* Title */}
           <FormField
@@ -209,16 +221,16 @@ const CreateArticle = () => {
             )}
           />
 
-          {/* --- 3. Add Cover Image FormField --- */}
+          {/* Cover Image */}
           <FormField
             control={control}
             name="coverImage"
-            render={({ }) => ( // Destructure field but don't spread it onto the input directly
+            render={() => (
               <FormItem>
                 <FormLabel>Cover Image</FormLabel>
                 <div
                   className="relative w-full h-64 border-2 border-dashed border-gray-400 rounded-md flex items-center justify-center bg-cover bg-center text-gray-500"
-                  style={{ backgroundImage: coverImageValue ? `url(${coverImageValue})` : "none" }} // Use watched value for preview
+                  style={{ backgroundImage: coverImageValue ? `url(${coverImageValue})` : "none" }}
                 >
                   {!coverImageValue && <span>Click or drag file to upload cover image</span>}
                   <FormControl>
@@ -228,7 +240,7 @@ const CreateArticle = () => {
                       onChange={(e) => {
                         const file = e.target.files?.[0];
                         if (file) {
-                          handleCoverImageUpload(file); // Use the specific handler
+                          handleCoverImageUpload(file);
                         }
                       }}
                       className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -240,7 +252,7 @@ const CreateArticle = () => {
             )}
           />
 
-          {/* Author (Consider renaming label if it's not "Co-Owners") */}
+          {/* Author */}
           <FormField
             control={control}
             name="author"
@@ -272,12 +284,11 @@ const CreateArticle = () => {
           <h3 className="text-lg font-semibold pt-4 border-t mt-6">Article Content</h3>
           {/* Dynamic Content (Paragraphs & Images) */}
           {fields.map((field, index) => (
-            <div key={field.id} className="flex items-start gap-2 p-4 border rounded-md relative group"> {/* Added styling */}
-              {/* Dropdown Menu - Consider making it more visually distinct */}
+            <div key={field.id} className="flex items-start gap-2 p-4 border rounded-md relative group">
               <div className="flex-shrink-0">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="hover:bg-muted focus-visible:ring-1 focus-visible:ring-ring"> {/* Improved focus */}
+                    <Button variant="ghost" size="icon" className="hover:bg-muted focus-visible:ring-1 focus-visible:ring-ring">
                       <GripVertical className="h-5 w-5 text-muted-foreground" />
                     </Button>
                   </DropdownMenuTrigger>
@@ -301,8 +312,7 @@ const CreateArticle = () => {
                 </DropdownMenu>
               </div>
 
-              {/* Content Fields */}
-              <div className="flex-1 space-y-4"> {/* Added space-y */}
+              <div className="flex-1 space-y-4">
                 {field.type === "paragraph" && (
                   <div className="space-y-2 flex-1">
                     <FormField
@@ -334,12 +344,11 @@ const CreateArticle = () => {
                   </div>
                 )}
 
-
                 {field.type === "image" && (
                   <FormField
                     control={control}
                     name={`content.${index}.imageFile`}
-                    render={({ field: { value } }) => ( // Only need value here
+                    render={({ field: { value } }) => (
                       <FormItem>
                         <FormLabel className="text-sm font-medium">Content Image</FormLabel>
                         <div
@@ -354,7 +363,7 @@ const CreateArticle = () => {
                               onChange={(e) => {
                                 const file = e.target.files?.[0];
                                 if (file) {
-                                  handleContentImageUpload(file, index); // Use correct handler
+                                  handleContentImageUpload(file, index);
                                 }
                               }}
                               className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
@@ -382,20 +391,19 @@ const CreateArticle = () => {
 
           {/* Action Buttons */}
           <div className="flex flex-wrap justify-end gap-4 pt-6 border-t mt-6">
-            {/* Preview Button - Triggers validation and local storage save */}
             <Button
               variant="outline"
-              type="button" // Change type to button to prevent form submission
-              onClick={handleSubmit(onPreview)} // Use handleSubmit to ensure validation before preview
+              type="button"
+              className="hover:text-white"
+              onClick={handleSubmit(onPreview)}
             >
               Preview
             </Button>
 
-            {/* Save Draft Button (Primary Submit) */}
             <Button
-              type="submit" // This is the main submit button now
+              type="submit"
               disabled={submitting}
-              className="bg-primary hover:bg-primary/90 text-primary-foreground" // Use primary color
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
             >
               {submitting
                 ? "Saving..."
@@ -405,7 +413,8 @@ const CreateArticle = () => {
               variant="destructive"
               type="button"
               onClick={() => {
-                localStorage.removeItem("create");
+                globalDraft.data = initialDraft;
+                globalDraft.fromPreview = false;
                 reset({
                   title: "",
                   author: "",
@@ -413,18 +422,11 @@ const CreateArticle = () => {
                   coverImage: "",
                   content: [],
                 });
-                setSavedDraft({
-                  title: "",
-                  author: "",
-                  tags: "",
-                  coverImage: "",
-                  content: [],
-                });
+                setSavedDraft(initialDraft);
               }}
             >
               Clear
             </Button>
-
           </div>
         </form>
       </Form>

@@ -33,17 +33,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useRouter } from "next/navigation";
+import { globalDraft, DraftData } from "@/lib/globalDraft";
+import axios from "axios";
 
 // Define the Articles type
 export type Articles = {
-  id: string; // Made id required
+  id: string;
   title: string;
   author: string;
   date: string;
   tags: string;
   coverImage: string;
   status: "drafts" | "published";
-  content: { type: "image" | "paragraph"; paragraphTitle?: string; paragraphText: string; imageFile: string }[];
+  content: { type: "image" | "paragraph"; paragraphTitle?: string; paragraphText?: string; imageFile?: string }[];
 };
 
 // Component for the actions cell
@@ -53,8 +55,32 @@ function ActionsCell({ article, onDeleteArticle }: { article: Articles; onDelete
 
   const handleEdit = () => {
     try {
-      localStorage.setItem("create", JSON.stringify(article));
-      router.push("/create-article");
+      // Map Articles to DraftData, ensuring content compatibility
+      const draftData: DraftData = {
+        id: article.id,
+        title: article.title || "",
+        author: article.author || "",
+        tags: article.tags || "",
+        coverImage: article.coverImage || "",
+        content: Array.isArray(article.content)
+          ? article.content.map(item =>
+              item.type === "paragraph"
+                ? {
+                    type: "paragraph",
+                    paragraphTitle: item.paragraphTitle || "",
+                    paragraphText: item.paragraphText || "",
+                  }
+                : item.type === "image"
+                ? {
+                    type: "image",
+                    imageFile: item.imageFile || "",
+                  }
+                : null
+            ).filter((item): item is { type: "paragraph"; paragraphTitle: string; paragraphText: string; } | { type: "image"; imageFile: string; } => item !== null)
+          : [],
+      };
+      globalDraft.data = draftData; // Set global draft
+      router.push(`/edit-article/${article.id}`);
     } catch (error) {
       console.error("Navigation failed:", error);
       alert("Failed to navigate to edit page.");
@@ -65,7 +91,8 @@ function ActionsCell({ article, onDeleteArticle }: { article: Articles; onDelete
     if (!confirm("Are you sure you want to delete this article?")) return;
     setIsDeleting(true);
     try {
-      await onDeleteArticle(article.id);
+      await axios.delete(`/api/article/${article.id}`);
+      onDeleteArticle(article.id);
     } catch (error) {
       console.error("Failed to delete article:", error);
       alert("Failed to delete article.");
@@ -76,7 +103,36 @@ function ActionsCell({ article, onDeleteArticle }: { article: Articles; onDelete
 
   const handlePreview = () => {
     try {
-      localStorage.setItem("view", JSON.stringify(article));
+      // Map Articles to DraftData, ensuring content compatibility
+      // const draftData: DraftData = {
+      //   id: article.id,
+      //   title: article.title || "",
+      //   author: article.author || "",
+      //   tags: article.tags || "",
+      //   coverImage: article.coverImage || "",
+      //   status : article.status || "drafts",
+      //   content: Array.isArray(article.content)
+      //     ? article.content
+      //         .map(item => {
+      //           if (item.type === "paragraph") {
+      //             return {
+      //               type: "paragraph",
+      //               paragraphTitle: item.paragraphTitle || "",
+      //               paragraphText: item.paragraphText || "",
+      //             };
+      //           } else if (item.type === "image") {
+      //             return {
+      //               type: "image",
+      //               imageFile: item.imageFile || "",
+      //             };
+      //           } else {
+      //             return null;
+      //           }
+      //         })
+      //         .filter((item): item is { type: "paragraph"; paragraphTitle: string; paragraphText: string; } | { type: "image"; imageFile: string; } => item !== null)
+      //     : [],
+      // };
+      globalDraft.data = article as DraftData; // Set global draft
       router.push("/preview?type=view");
     } catch (error) {
       console.error("Navigation failed:", error);
@@ -152,9 +208,7 @@ export const columns = (
       const status = row.getValue("status") as string;
       return (
         <div
-          className={`uppercase px-0 py-1 rounded-3xl text-center font-medium ${
-            status === "drafts" ? "bg-black/40 text-white" : "bg-green-200 text-green-500"
-          }`}
+          className={`uppercase px-0 py-1 rounded-3xl text-center font-medium ${status === "drafts" ? "bg-black/40 text-white" : "bg-green-200 text-green-500"}`}
         >
           {status}
         </div>
